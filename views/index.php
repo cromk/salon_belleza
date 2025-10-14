@@ -34,7 +34,7 @@ $usuario = $_SESSION['usuario']['nombre'];
           <li class="nav-item"><a class="nav-link" href="#"><i class="bi bi-calendar2-check"></i> Citas</a></li>
           <li class="nav-item"><a class="nav-link" href="#"><i class="bi bi-person-hearts"></i> Clientes</a></li>
           <li class="nav-item"><a class="nav-link" href="#"><i class="bi bi-brush"></i> Servicios</a></li>
-          <li class="nav-item"><a class="nav-link" href="#"><i class="bi bi-people"></i> Personal</a></li>
+          <li class="nav-item"><a class="nav-link" href="personal.php"><i class="bi bi-people"></i> Personal</a></li>
         </ul>
 
         <div class="dropdown">
@@ -146,5 +146,23 @@ $usuario = $_SESSION['usuario']['nombre'];
       }
     });
   </script>
+  <!-- Footer -->
+<footer class="footer  text-center text-white">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-md-6">
+        <h6 class="fw-bold mb-2"><i class="bi bi-scissors"></i> Salón de Belleza</h6>
+        <p class="small mb-1">Tu estilo, nuestro arte 💜</p>
+        <p class="small mb-3">Sistema de gestión integral — © <?php echo date('Y'); ?> Todos los derechos reservados.</p>
+
+        <div>
+          <a href="#" class="text-white mx-2"><i class="bi bi-facebook"></i></a>
+          <a href="#" class="text-white mx-2"><i class="bi bi-instagram"></i></a>
+          <a href="#" class="text-white mx-2"><i class="bi bi-whatsapp"></i></a>
+        </div>
+      </div>
+    </div>
+  </div>
+</footer>
 </body>
 </html>

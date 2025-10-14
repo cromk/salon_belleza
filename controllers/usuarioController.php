@@ -8,18 +8,37 @@ $con = new Conexion();
 $cn = $con->conectar();
 $modelo = new usuarioModel($cn);
 
-if ($_POST['action'] == 'login') {
-    $usuario = trim($_POST['usuario']);
-    $password = trim($_POST['password']);
+$action = $_POST['action'] ?? '';
 
-    $res = $modelo->verificarUsuario($usuario, $password);
+switch($action){
+    case 'login':
+        $usuario = trim($_POST['usuario']);
+        $password = trim($_POST['password']);
 
-    if ($res) {
-        session_start();
-        $_SESSION['usuario'] = $res;
-        echo json_encode(["success" => true]);
-    } else {
-        echo json_encode(["success" => false, "message" => "Usuario o contraseña incorrectos"]);
-    }
+        $res = $modelo->verificarUsuario($usuario, $password);
+
+        if ($res) {
+            session_start();
+            $_SESSION['usuario'] = $res;
+            echo json_encode(["success" => true]);
+        } else
+            echo json_encode(["success" => false, "message" => "Usuario o contraseña incorrectos"]);
+        break;
+
+    case 'create':
+        $nombre = $_POST['nombre'] ?? null;
+        $apellido = $_POST['apellido'] ?? null;
+        $correo = $_POST['correo'] ?? null;
+        $telefono = $_POST['telefono'] ?? null;
+        $usuario = $_POST['usuario'] ?? null;
+        $clave = $_POST['clave'] ?? null;
+        $rol = $_POST['rol'] ?? null;
+        $ok = $model->create($nombre,$apellido,$correo,$telefono,$usuario,$clave,$rol);
+        echo json_encode(["success"=>$ok===true, "msg"=>$ok===true?"Política creada":"Error al crear"]);
+        break;
+
+    default:
+        echo json_encode(["success" => false, "message" => "Funcion no valida"]);
+        break
 }
 ?>

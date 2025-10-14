@@ -132,3 +132,20 @@ body.index{
   box-shadow: 0 5px 20px rgba(0,0,0,0.08);
   padding: 25px;
 }
+
+/*******************************************************************/
+.footer {
+  background: linear-gradient(90deg, #5e2a84, #8a2be2, #b48ff7);
+  font-family: 'Poppins', sans-serif;
+  box-shadow: 0 -3px 10px rgba(0,0,0,0.1);
+  padding: 10px 0;
+}
+
+.footer a {
+  color: #fff;
+  transition: color 0.3s ease-in-out;
+}
+
+.footer a:hover {
+  color: #ffdaff;
+}
