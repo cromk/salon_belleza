@@ -133,6 +133,20 @@ body.index{
   padding: 25px;
 }
 
+table th {
+  background-color: #8a2be2;
+  color: white;
+}
+
+.btn-primary {
+  background-color: #8a2be2;
+  border: none;
+}
+
+.btn-primary:hover {
+  background-color: #6f2ebf;
+}
+
 /*******************************************************************/
 .footer {
   background: linear-gradient(90deg, #5e2a84, #8a2be2, #b48ff7);

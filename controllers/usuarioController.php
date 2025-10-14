@@ -39,6 +39,6 @@ switch($action){
 
     default:
         echo json_encode(["success" => false, "message" => "Funcion no valida"]);
-        break
+        break;
 }
 ?>

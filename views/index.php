@@ -5,51 +5,13 @@ if (!isset($_SESSION['usuario'])) {
   exit();
 }
 $usuario = $_SESSION['usuario']['nombre'];
-?>
 
-<!DOCTYPE html>
-<html lang="es">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Panel Principal | BeautyFlow</title>
-  <link rel="stylesheet" href="../assets/css/style.css">
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-</head>
+include 'layout/header.php';
+?>
 <body class="index">
 
   <!-- Navbar -->
-  <nav class="navbar navbar-expand-lg navbar-dark">
-    <div class="container-fluid">
-      <a class="navbar-brand" href="#"><i class="bi bi-scissors"></i> BeautyFlow</a>
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-        <span class="navbar-toggler-icon"></span>
-      </button>
-
-      <div class="collapse navbar-collapse" id="navbarNav">
-        <ul class="navbar-nav me-auto">
-          <li class="nav-item"><a class="nav-link active" href="#"><i class="bi bi-house-door"></i> Inicio</a></li>
-          <li class="nav-item"><a class="nav-link" href="#"><i class="bi bi-calendar2-check"></i> Citas</a></li>
-          <li class="nav-item"><a class="nav-link" href="#"><i class="bi bi-person-hearts"></i> Clientes</a></li>
-          <li class="nav-item"><a class="nav-link" href="#"><i class="bi bi-brush"></i> Servicios</a></li>
-          <li class="nav-item"><a class="nav-link" href="personal.php"><i class="bi bi-people"></i> Personal</a></li>
-        </ul>
-
-        <div class="dropdown">
-          <a class="nav-link dropdown-toggle text-white fw-semibold" href="#" data-bs-toggle="dropdown">
-            <i class="bi bi-person-circle"></i> <?php echo $usuario; ?>
-          </a>
-          <ul class="dropdown-menu dropdown-menu-end">
-            <li><a class="dropdown-item" href="#"><i class="bi bi-gear"></i> Configuración</a></li>
-            <li><hr class="dropdown-divider"></li>
-            <li><a class="dropdown-item text-danger" href="../logout.php"><i class="bi bi-box-arrow-right"></i> Cerrar sesión</a></li>
-          </ul>
-        </div>
-      </div>
-    </div>
-  </nav>
+  <?php include 'layout/navbar.php'; ?>
 
   <!-- Contenido -->
   <div class="container mt-5">
@@ -147,22 +109,6 @@ $usuario = $_SESSION['usuario']['nombre'];
     });
   </script>
   <!-- Footer -->
-<footer class="footer  text-center text-white">
-  <div class="container">
-    <div class="row justify-content-center">
-      <div class="col-md-6">
-        <h6 class="fw-bold mb-2"><i class="bi bi-scissors"></i> Salón de Belleza</h6>
-        <p class="small mb-1">Tu estilo, nuestro arte 💜</p>
-        <p class="small mb-3">Sistema de gestión integral — © <?php echo date('Y'); ?> Todos los derechos reservados.</p>
-
-        <div>
-          <a href="#" class="text-white mx-2"><i class="bi bi-facebook"></i></a>
-          <a href="#" class="text-white mx-2"><i class="bi bi-instagram"></i></a>
-          <a href="#" class="text-white mx-2"><i class="bi bi-whatsapp"></i></a>
-        </div>
-      </div>
-    </div>
-  </div>
-</footer>
+  <?php include 'layout/footer.php'; ?>
 </body>
 </html>
