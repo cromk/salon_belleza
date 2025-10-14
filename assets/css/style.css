@@ -1,0 +1,134 @@
+body.login {
+  background: linear-gradient(135deg, #f9f4fc, #f0e7fa, #ffffff);
+  font-family: 'Poppins', sans-serif;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.card1 {
+  width: 420px;
+  border: none;
+  border-radius: 20px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+  background: #fffdfc;
+  transition: all 0.3s ease;
+}
+
+.card1:hover {
+  transform: translateY(-5px);
+}
+
+.form-control {
+  border-radius: 10px;
+  border: 1px solid #e0c8ff;
+}
+
+.form-control:focus {
+  box-shadow: 0 0 10px rgba(138, 43, 226, 0.2);
+  border-color: #b48ff7;
+}
+
+.btn-login {
+  background: linear-gradient(90deg, #8a2be2, #b76eff);
+  color: #fff;
+  border-radius: 10px;
+  font-weight: 600;
+  border: none;
+}
+
+.btn-login:hover {
+  background: linear-gradient(90deg, #a65dfc, #8a2be2);
+}
+
+.brand-icon {
+  font-size: 3.5rem;
+  background: linear-gradient(90deg, #8a2be2, #b76eff);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.text-muted a {
+  color: #8a2be2;
+  text-decoration: none;
+}
+
+/******************************************************************/
+body.index{
+  background-color: #f9f6fc;
+  font-family: 'Poppins', sans-serif;
+}
+
+/* ===== Navbar ===== */
+.navbar {
+  background: linear-gradient(90deg, #5e2a84, #8a2be2, #b48ff7);
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.15);
+}
+
+.navbar-brand {
+  font-weight: 700;
+  color: #fff !important;
+  font-size: 1.3rem;
+}
+
+.nav-link {
+  color: #f2e9ff !important;
+  font-weight: 500;
+  transition: color 0.2s ease-in-out;
+}
+
+.nav-link:hover,
+.nav-link.active {
+  color: #fff !important;
+  text-shadow: 0 0 4px rgba(255, 255, 255, 0.7);
+}
+
+.dropdown-menu {
+  background-color: #5e2a84;
+  border: none;
+  border-radius: 1rem;
+}
+
+.dropdown-item {
+  color: #fff;
+}
+
+.dropdown-item:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* ===== Dashboard ===== */
+.card {
+  border: none;
+  border-radius: 1rem;
+  background: #ffffff;
+  box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+  transition: all 0.3s ease;
+}
+
+.card:hover {
+  transform: translateY(-6px);
+}
+
+.card i {
+  font-size: 2.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.text-gradient {
+  color: #8a2be2;
+}
+
+.section-title {
+  font-weight: 700;
+  color: #4b286d;
+}
+
+/* ===== Chart Section ===== */
+#chartContainer {
+  background: #ffffff;
+  border-radius: 1rem;
+  box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+  padding: 25px;
+}
