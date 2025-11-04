@@ -18,4 +18,13 @@ $(document).ready(function () {
       });
     });
     
+    // Toggle mostrar/ocultar contraseña
+    $(document).on('click', '#togglePassword', function () {
+      const input = $('#password');
+      const icon = $(this).find('i');
+      const type = input.attr('type') === 'password' ? 'text' : 'password';
+      input.attr('type', type);
+      icon.toggleClass('bi-eye bi-eye-slash');
+    });
+
 });

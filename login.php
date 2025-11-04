@@ -31,6 +31,7 @@
         <div class="input-group">
           <span class="input-group-text bg-white"><i class="bi bi-lock"></i></span>
           <input type="password" class="form-control" id="password" name="password" placeholder="Ingrese su contraseña" required>
+          <span class="input-group-text bg-white" id="togglePassword" role="button" aria-label="Mostrar contraseña" style="cursor: pointer;"><i class="bi bi-eye"></i></span>
         </div>
       </div>
 
