@@ -1,6 +1,7 @@
 <?php
 require_once "../models/usuarioModel.php";
 require_once "../config/Conexion.php";
+require_once "../config/logger.php";
 
 header('Content-Type: application/json');
 
@@ -26,15 +27,99 @@ switch($action){
         break;
 
     case 'create':
-        $nombre = $_POST['nombre'] ?? null;
-        $apellido = $_POST['apellido'] ?? null;
-        $correo = $_POST['correo'] ?? null;
-        $telefono = $_POST['telefono'] ?? null;
-        $usuario = $_POST['usuario'] ?? null;
-        $clave = $_POST['clave'] ?? null;
-        $rol = $_POST['rol'] ?? null;
-        $ok = $model->create($nombre,$apellido,$correo,$telefono,$usuario,$clave,$rol);
-        echo json_encode(["success"=>$ok===true, "msg"=>$ok===true?"Política creada":"Error al crear"]);
+    $nombre = $_POST['nombre'] ?? null;
+    $apellido = $_POST['apellido'] ?? null;
+    $correo = isset($_POST['correo']) ? trim($_POST['correo']) : null;
+    // normalizar correo a minúsculas y eliminar espacios invisibles
+    if ($correo) {
+        $correo = mb_strtolower($correo);
+        $correo = trim($correo);
+        // Si el usuario envía solo la parte local (sin @), añadir el dominio por defecto
+        if (strpos($correo, '@') === false) {
+            $correo = $correo . '@salonbelleza.com';
+        }
+    }
+    $telefono = $_POST['telefono'] ?? null;
+    $usuario = isset($_POST['usuario']) ? trim($_POST['usuario']) : null;
+    $clave = $_POST['clave'] ?? null;
+        $rol = isset($_POST['id_rol']) ? intval($_POST['id_rol']) : ($_POST['rol'] ?? null);
+
+        // Validaciones básicas
+        if (!$nombre || !$correo || !$usuario || !$clave || !$rol) {
+            echo json_encode(["success" => false, "message" => "Faltan datos obligatorios"]);
+            break;
+        }
+
+        // Comprobar duplicados (correo o usuario) usando normalización en SQL para evitar diferencias de case/espacios
+        try {
+            $chk = $cn->prepare("SELECT usuario, correo FROM usuarios WHERE LOWER(TRIM(correo)) = :correo OR TRIM(usuario) = :usuario LIMIT 1");
+            $correo_check = mb_strtolower(trim($correo));
+            $usuario_check = trim($usuario);
+            $chk->bindParam(':correo', $correo_check);
+            $chk->bindParam(':usuario', $usuario_check);
+            $chk->execute();
+            $found = $chk->fetch(PDO::FETCH_ASSOC);
+            if ($found) {
+                // Comparaciones normalizadas
+                if (!empty($found['correo']) && mb_strtolower(trim($found['correo'])) === $correo_check) {
+                    echo json_encode(["success" => false, "message" => "El correo ya está registrado"]);
+                    break;
+                }
+                if (!empty($found['usuario']) && trim($found['usuario']) === $usuario_check) {
+                    echo json_encode(["success" => false, "message" => "El nombre de usuario ya está en uso"]);
+                    break;
+                }
+                // genérico
+                echo json_encode(["success" => false, "message" => "Ya existe un usuario con esos datos"]);
+                break;
+            }
+        } catch (Exception $e) {
+            // si falla la comprobación, continuar e intentar crear (se mostrará el error real)
+        }
+
+        $ok = $modelo->create($nombre, $apellido, $correo, $telefono, $usuario, $clave, $rol);
+        if (is_numeric($ok)) {
+            // Registrar intento exitoso
+            log_change((int)$ok, 'create_usuario', [
+                'input' => ['nombre'=>$nombre,'apellido'=>$apellido,'correo'=>$correo,'telefono'=>$telefono,'usuario'=>$usuario,'id_rol'=>$rol],
+                'result' => 'created',
+            ]);
+            echo json_encode(["success" => true, "message" => "Usuario creado correctamente", "id_usuario" => (int)$ok]);
+        } else if (is_array($ok) && isset($ok['error'])) {
+            // Mapear errores de integridad (duplicate key) a mensajes amigables
+            $err = $ok['error'];
+            $errInfo = $ok['errorInfo'] ?? null;
+            // Si tenemos errorInfo (PDO), comprobar el código MySQL
+            if (is_array($errInfo) && isset($errInfo[1]) && intval($errInfo[1]) === 1062) {
+                // Mensaje típico: "Duplicate entry 'value' for key 'index_name'"
+                $msg = $errInfo[2] ?? $err;
+                if (stripos($msg, 'correo') !== false) {
+                    echo json_encode(["success" => false, "message" => "El correo ya está registrado"]);
+                    break;
+                }
+                if (stripos($msg, 'usuario') !== false) {
+                    echo json_encode(["success" => false, "message" => "El nombre de usuario ya está en uso"]);
+                    break;
+                }
+                // si no sabemos qué índice, devolver mensaje genérico de duplicado
+                echo json_encode(["success" => false, "message" => "Ya existe un registro con esos datos (duplicado)"]);
+                break;
+            }
+            // Registrar intento fallido
+            log_change(null, 'create_usuario_failed', [
+                'input' => ['nombre'=>$nombre,'apellido'=>$apellido,'correo'=>$correo,'telefono'=>$telefono,'usuario'=>$usuario,'id_rol'=>$rol],
+                'error' => $err,
+                'errorInfo' => $errInfo,
+            ]);
+            // si no tenemos errorInfo o no es duplicado, devolver detalle (temporal para debug)
+            echo json_encode(["success" => false, "message" => "Error al crear usuario: " . $err]);
+        } else {
+            log_change(null, 'create_usuario_failed', [
+                'input' => ['nombre'=>$nombre,'apellido'=>$apellido,'correo'=>$correo,'telefono'=>$telefono,'usuario'=>$usuario,'id_rol'=>$rol],
+                'error' => 'unknown',
+            ]);
+            echo json_encode(["success" => false, "message" => "Error al crear usuario"]);
+        }
         break;
 
     default:
