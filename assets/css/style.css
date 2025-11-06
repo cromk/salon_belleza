@@ -55,6 +55,7 @@ body.login {
 .brand-icon {
   font-size: 3.5rem;
   background: linear-gradient(90deg, #8a2be2, #b76eff);
+  background-clip: text;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
