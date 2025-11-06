@@ -14,28 +14,6 @@ include 'layout/header.php';
   </div>
 
   <?php include 'layout/footer.php'; ?>
-  <script>
-    // Cargar servicios públicos
-    fetch('/salon_belleza/controllers/ServicioController.php?action=read')
-      .then(r => r.json())
-      .then(res => {
-        if (res.success) {
-          const target = document.getElementById('catalogoServicios');
-          target.innerHTML = '';
-          res.data.forEach(s => {
-            const col = document.createElement('div');
-            col.className = 'col-md-4 mb-4';
-            col.innerHTML = `
-              <div class="card p-3 h-100">
-                <h5>${s.nombre}</h5>
-                <p class="text-muted">${s.descripcion || ''}</p>
-                <p><strong>Precio:</strong> ${s.precio_base} Bs</p>
-                <p><strong>Duración:</strong> ${s.duracion_base} min</p>
-              </div>`;
-            target.appendChild(col);
-          });
-        }
-      }).catch(err => console.error(err));
-  </script>
+    <script src="/salon_belleza/assets/js/catalogo.js"></script>
 </body>
 </html>

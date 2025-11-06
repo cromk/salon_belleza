@@ -24,19 +24,29 @@ function nav_active($name, $currentFile) {
           <li class="nav-item"><a class="nav-link <?php echo nav_active('citas.php', $currentFile); ?>" href="/salon_belleza/views/citas.php"><i class="bi bi-calendar2-check"></i> Citas</a></li>
           <li class="nav-item"><a class="nav-link <?php echo nav_active('clientes.php', $currentFile); ?>" href="/salon_belleza/views/clientes.php"><i class="bi bi-person-hearts"></i> Clientes</a></li>
           <li class="nav-item"><a class="nav-link <?php echo nav_active('servicios.php', $currentFile); ?>" href="/salon_belleza/views/servicios.php"><i class="bi bi-brush"></i> Servicios</a></li>
-          <li class="nav-item"><a class="nav-link <?php echo nav_active('personal.php', $currentFile); ?>" href="/salon_belleza/views/personal.php"><i class="bi bi-people"></i> Personal</a></li>
+          <?php if (isset($_SESSION['usuario']) && (int)($_SESSION['usuario']['id_rol'] ?? 0) === 1): ?>
+            <li class="nav-item"><a class="nav-link <?php echo nav_active('personal.php', $currentFile); ?>" href="/salon_belleza/views/personal.php"><i class="bi bi-people"></i> Personal</a></li>
+          <?php endif; ?>
         </ul>
 
-          <div class="dropdown">
-          <a class="nav-link dropdown-toggle text-white fw-semibold" href="#" data-bs-toggle="dropdown">
-            <i class="bi bi-person-circle"></i> <?php echo $usuario; ?>
-          </a>
-          <ul class="dropdown-menu dropdown-menu-end">
-            <li><a class="dropdown-item" href="#"><i class="bi bi-gear"></i> Configuración</a></li>
-            <li><hr class="dropdown-divider"></li>
-            <li><a class="dropdown-item text-danger" href="/salon_belleza/logout.php"><i class="bi bi-box-arrow-right"></i> Cerrar sesión</a></li>
-          </ul>
-        </div>
+          <?php
+          // Mostrar nombre de usuario si hay sesión, si no mostrar enlace a login
+          if (session_status() == PHP_SESSION_NONE) session_start();
+          $userName = isset($_SESSION['usuario']['nombre']) ? htmlspecialchars($_SESSION['usuario']['nombre']) : null;
+          if ($userName): ?>
+            <div class="dropdown">
+              <a class="nav-link dropdown-toggle text-white fw-semibold" href="#" data-bs-toggle="dropdown">
+                <i class="bi bi-person-circle"></i> <?php echo $userName; ?>
+              </a>
+              <ul class="dropdown-menu dropdown-menu-end">
+                <li><a class="dropdown-item" href="#"><i class="bi bi-gear"></i> Configuración</a></li>
+                <li><hr class="dropdown-divider"></li>
+                <li><a class="dropdown-item text-danger" href="/salon_belleza/logout.php"><i class="bi bi-box-arrow-right"></i> Cerrar sesión</a></li>
+              </ul>
+            </div>
+          <?php else: ?>
+            <a class="nav-link text-white fw-semibold" href="/salon_belleza/login.php"><i class="bi bi-box-arrow-in-right"></i> Iniciar sesión</a>
+          <?php endif; ?>
       </div>
     </div>
   </nav>

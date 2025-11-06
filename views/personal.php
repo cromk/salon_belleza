@@ -5,6 +5,10 @@ if (!isset($_SESSION['usuario'])) {
   exit();
 }
 $usuario = $_SESSION['usuario']['nombre'];
+// Restringir acceso a administradores
+if (isset($_SESSION['usuario']['id_rol']) && (int)$_SESSION['usuario']['id_rol'] !== 1) {
+  header('Location: catalogo.php'); exit();
+}
 include 'layout/header.php';
 ?>
 <body class="index">
