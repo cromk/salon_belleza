@@ -1,5 +1,8 @@
 document.addEventListener('DOMContentLoaded', function() {
   const target = document.getElementById('catalogoServicios');
+  const searchInput = document.getElementById('searchCatalog');
+  const suggestionsEl = document.getElementById('searchSuggestions');
+  let servicesData = [];
 
   function formatPrice(p) {
     return Number(p).toFixed(2);
@@ -11,36 +14,49 @@ document.addEventListener('DOMContentLoaded', function() {
       const col = document.createElement('div');
       col.className = 'col-md-4 mb-4';
 
-      // build specs inputs
+      // build specs inputs inside a collapse
       let specsHtml = '';
+      const collapseId = `specs-collapse-${s.id_servicio}`;
       if (s.especificaciones && s.especificaciones.length) {
-        specsHtml += '<div class="mb-2"><strong>Opciones:</strong>';
+        specsHtml += `<div class="mt-2">
+            <a class="btn btn-sm btn-outline-secondary" data-bs-toggle="collapse" href="#${collapseId}" role="button" aria-expanded="false" aria-controls="${collapseId}">Opciones</a>
+            <div class="collapse mt-2" id="${collapseId}">`;
         s.especificaciones.forEach(v => {
-          // use checkbox; store data attributes for price/time and tipo
           const tipo = v.tipo || '';
           let labelExtra = '';
           if (tipo === 'precio') labelExtra = `(+${formatPrice(v.valor_precio)})`;
           else if (tipo === 'tiempo') labelExtra = `(+${v.valor_tiempo} min)`;
           else labelExtra = `(+${formatPrice(v.valor_precio)} | +${v.valor_tiempo} min)`;
 
-          specsHtml += `\n<div class="form-check">`;
-          specsHtml += `<input class="form-check-input espec-check" type="checkbox" data-precio="${v.valor_precio}" data-tiempo="${v.valor_tiempo}" data-tipo="${tipo}" data-nombre="${escapeHtml(v.nombre)}" id="esp-${v.id_especificacion}" />`;
-          specsHtml += `<label class="form-check-label" for="esp-${v.id_especificacion}">${escapeHtml(v.nombre)} ${labelExtra}</label>`;
-          specsHtml += `</div>`;
+          specsHtml += `<div class="form-check py-1">
+              <input class="form-check-input espec-check" type="checkbox" data-precio="${v.valor_precio}" data-tiempo="${v.valor_tiempo}" data-tipo="${tipo}" data-nombre="${escapeHtml(v.nombre)}" id="esp-${v.id_especificacion}" />
+              <label class="form-check-label ms-2" for="esp-${v.id_especificacion}">${escapeHtml(v.nombre)} <small class="text-muted">${labelExtra}</small></label>
+            </div>`;
         });
-        specsHtml += '</div>';
+        specsHtml += `</div></div>`;
       }
 
       col.innerHTML = `
-        <div class="card p-3 h-100">
-          <h5>${escapeHtml(s.nombre)}</h5>
-          <p class="text-muted">${escapeHtml(s.descripcion || '')}</p>
-          <p><strong>Precio base:</strong> <span class="base-price">${formatPrice(s.precio_base)}</span> $</p>
-          <p><strong>Duración base:</strong> <span class="base-time">${s.duracion_base}</span> min</p>
-          ${specsHtml}
-          <hr>
-          <p><strong>Total:</strong> <span class="total-price">${formatPrice(s.precio_base)}</span> $</p>
-          <p><strong>Tiempo total:</strong> <span class="total-time">${s.duracion_base}</span> min</p>
+        <div class="service-card h-100 shadow-sm rounded overflow-hidden">
+          <div class="service-header p-3 text-white">
+            <h5 class="mb-0">${escapeHtml(s.nombre)}</h5>
+            <small class="d-block opacity-75">${escapeHtml(s.descripcion || '')}</small>
+          </div>
+          <div class="service-body p-3 d-flex flex-column">
+            <!-- image placeholder removed: catalog displays info-only cards without image -->
+            <div class="mb-2 d-flex gap-2">
+              <span class="badge bg-primary">Precio: <strong class="base-price ms-1">${formatPrice(s.precio_base)}</strong>$</span>
+              <span class="badge bg-secondary">Duración: <strong class="base-time ms-1">${s.duracion_base}</strong> min</span>
+            </div>
+            ${specsHtml}
+            <div class="mt-auto d-flex justify-content-between align-items-center pt-3 border-top">
+              <div>
+                <div>Total: <strong class="total-price">${formatPrice(s.precio_base)}</strong>$</div>
+                <div class="text-muted">Tiempo: <strong class="total-time">${s.duracion_base}</strong> min</div>
+              </div>
+              <button class="btn btn-sm btn-primary">Reservar</button>
+            </div>
+          </div>
         </div>`;
 
       target.appendChild(col);
@@ -49,7 +65,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // attach listeners
     document.querySelectorAll('.espec-check').forEach(chk => {
       chk.addEventListener('change', function() {
-        const card = this.closest('.card');
+        const card = this.closest('.service-card');
         recalcCard(card);
       });
     });
@@ -87,7 +103,83 @@ document.addEventListener('DOMContentLoaded', function() {
   fetch('/salon_belleza/controllers/ServicioController.php?action=read')
     .then(r => r.json())
     .then(res => {
-      if (res.success) renderServicios(res.data);
+      if (res.success) {
+        servicesData = res.data || [];
+        renderServicios(servicesData);
+      }
     }).catch(err => console.error(err));
+
+  // --- Search / suggestions logic ---
+  function debounce(fn, wait) {
+    let t;
+    return function(...args) {
+      clearTimeout(t);
+      t = setTimeout(() => fn.apply(this, args), wait);
+    };
+  }
+
+  function buildSuggestions(query) {
+    if (!query) { hideSuggestions(); return; }
+    const q = query.trim().toLowerCase();
+    const matches = [];
+    for (const s of servicesData) {
+      if (matches.length >= 8) break;
+      const name = (s.nombre || '').toLowerCase();
+      const desc = (s.descripcion || '').toLowerCase();
+      if (name.includes(q) || desc.includes(q)) {
+        matches.push({id: s.id_servicio, text: s.nombre});
+        continue;
+      }
+      // search inside especificaciones
+      if (s.especificaciones && s.especificaciones.length) {
+        for (const e of s.especificaciones) {
+          if ((e.nombre || '').toLowerCase().includes(q)) { matches.push({id: s.id_servicio, text: s.nombre}); break; }
+        }
+      }
+    }
+    renderSuggestions(matches);
+  }
+
+  function renderSuggestions(items) {
+    if (!items || !items.length) { hideSuggestions(); return; }
+    suggestionsEl.innerHTML = items.map(it => `<li class="list-group-item list-group-item-action suggestion-item" data-id="${it.id}">${escapeHtml(it.text)}</li>`).join('');
+    suggestionsEl.classList.remove('d-none');
+    // attach click handlers
+    suggestionsEl.querySelectorAll('.suggestion-item').forEach(li => li.addEventListener('click', function(){
+      const id = this.dataset.id;
+      const text = this.textContent;
+      searchInput.value = text;
+      hideSuggestions();
+      // filter result to the clicked service
+      const filtered = servicesData.filter(s => String(s.id_servicio) === String(id));
+      renderServicios(filtered);
+    }));
+  }
+
+  function hideSuggestions() { suggestionsEl.classList.add('d-none'); suggestionsEl.innerHTML = ''; }
+
+  const doFilter = debounce(function() {
+    const q = (searchInput.value || '').trim().toLowerCase();
+    buildSuggestions(q);
+    if (!q) { renderServicios(servicesData); return; }
+    const filtered = servicesData.filter(s => {
+      const name = (s.nombre || '').toLowerCase();
+      const desc = (s.descripcion || '').toLowerCase();
+      if (name.includes(q) || desc.includes(q)) return true;
+      if (s.especificaciones && s.especificaciones.length) {
+        for (const e of s.especificaciones) {
+          if ((e.nombre || '').toLowerCase().includes(q)) return true;
+        }
+      }
+      return false;
+    });
+    renderServicios(filtered);
+  }, 220);
+
+  if (searchInput) {
+    searchInput.addEventListener('input', doFilter);
+    searchInput.addEventListener('focus', function(){ if (this.value) buildSuggestions(this.value); });
+    document.addEventListener('click', function(e){ if (!e.target.closest('#searchSuggestions') && !e.target.closest('#searchCatalog')) hideSuggestions(); });
+  }
 
 });

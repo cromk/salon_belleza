@@ -264,3 +264,48 @@ body.index{
 .footer a:hover {
   color: #ffdaff;
 }
+
+/* ===== Catalog styles ===== */
+.service-card {
+  background: linear-gradient(180deg, #ffffff 0%, #fbf9ff 100%);
+  border-radius: 10px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+.service-header {
+  background: linear-gradient(90deg, #7c3bd6 0%, #b48ff7 100%);
+  padding: 18px;
+}
+.service-header h5 { font-weight: 700; margin: 0; }
+.service-body { background: #fff; }
+.service-card:hover { transform: translateY(-6px); box-shadow: 0 14px 30px rgba(75,40,109,0.08); }
+.total-price { font-size: 1.05rem; color: #4b286d; }
+.total-time { color: #6b5aa8; }
+.service-card .btn-primary { background: linear-gradient(90deg,#8a2be2,#b48ff7); border: none; }
+
+/* Catalog search controls */
+.catalog-controls { gap: 10px; }
+.catalog-logo { filter: drop-shadow(0 4px 8px rgba(124,59,214,0.12)); }
+.search-input { padding-right: 2.5rem; }
+.search-suggestions {
+  position: absolute;
+  top: 42px;
+  right: 0;
+  left: 0;
+  z-index: 1050;
+  max-height: 240px;
+  overflow: auto;
+  box-shadow: 0 8px 20px rgba(75,40,109,0.08);
+}
+.search-suggestions .list-group-item { cursor: pointer; }
+
+@media (max-width: 576px) {
+  .catalog-controls { flex-direction: column-reverse; align-items: stretch; }
+  .catalog-logo { display: none; }
+}
+
+/* responsive smaller cards */
+@media (max-width: 767px) {
+  .service-media { height: 120px !important; }
+}
