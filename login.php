@@ -36,7 +36,7 @@
       </div>
 
       <div class="d-grid mt-4">
-        <button class="btn btn-login">Iniciar Sesión</button>
+        <button type="submit" id="btnLogin" class="btn btn-login">Iniciar Sesión</button>
       </div>
 
       <div id="mensaje" class="alert alert-danger mt-3 d-none"></div>

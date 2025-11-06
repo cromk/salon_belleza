@@ -5,6 +5,10 @@ if (!isset($_SESSION['usuario'])) {
   exit();
 }
 $usuario = $_SESSION['usuario']['nombre'];
+// Restringir acceso a administradores
+if (isset($_SESSION['usuario']['id_rol']) && (int)$_SESSION['usuario']['id_rol'] !== 1) {
+  header('Location: catalogo.php'); exit();
+}
 include 'layout/header.php';
 ?>
 <body class="index">
@@ -75,6 +79,62 @@ include 'layout/header.php';
     </div>
   </div>
 
+  <!-- Sección: Estilistas -->
+  <div class="container mt-4">
+    <h3 class="section-title mb-4 text-center">Gestión de Estilistas ✂️</h3>
+
+    <div class="row">
+      <div class="col-md-5">
+        <div class="card p-4">
+          <h5 class="mb-3 text-gradient"><i class="bi bi-person-badge"></i> Nuevo perfil de estilista</h5>
+          <form id="formEstilista">
+            <div class="mb-3">
+              <label class="form-label">Usuario (preexistente)</label>
+              <select id="selectUsuario" name="id_usuario" class="form-control" required>
+                <option value="">-- Seleccione usuario --</option>
+              </select>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Especialidad</label>
+              <input type="text" id="especialidad" name="especialidad" class="form-control">
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Años de experiencia</label>
+              <input type="number" id="experiencia" name="experiencia" class="form-control" value="0">
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Disponible</label>
+              <select id="disponible" name="disponible" class="form-control">
+                <option value="Sí">Sí</option>
+                <option value="No">No</option>
+              </select>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Servicios que ofrece</label>
+              <div id="listaServicios" class="d-flex flex-column" style="max-height:200px; overflow:auto; border:1px solid #eee; padding:8px; border-radius:6px;"></div>
+            </div>
+            <div class="d-grid">
+              <button type="submit" class="btn"><i class="bi bi-save"></i> Guardar estilista</button>
+            </div>
+            <div id="mensajeEstilista" class="alert mt-3 d-none"></div>
+          </form>
+        </div>
+      </div>
+
+      <div class="col-md-7">
+        <div class="card p-4">
+          <h5 class="mb-3"><i class="bi bi-list-check"></i> Estilistas registrados</h5>
+          <table class="table table-bordered table-striped align-middle" id="tablaEstilistas">
+            <thead>
+              <tr><th>#</th><th>Nombre</th><th>Especialidad</th><th>Años</th><th>Servicios</th></tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <script>
     /*$(document).ready(function() {
 
@@ -139,5 +199,7 @@ include 'layout/header.php';
   </script>
   <!-- Footer -->
   <?php include 'layout/footer.php'; ?>
+  <script src="/salon_belleza/assets/js/personal.js"></script>
+  <script src="/salon_belleza/assets/js/estilistas.js"></script>
 </body>
 </html>

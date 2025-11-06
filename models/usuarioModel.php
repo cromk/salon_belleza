@@ -33,10 +33,21 @@ class usuarioModel {
             $stmt->bindParam(":e", $e, PDO::PARAM_STR); //Enviando parametro con su tipo de dato
             $stmt->bindParam(":f", $f, PDO::PARAM_STR); //Enviando parametro con su tipo de dato
             $stmt->bindParam(":g", $g, PDO::PARAM_INT); //Enviando parametro con su tipo de dato
-            return $stmt->execute(); //Ejecutando consulta
-        } catch (Exception $e) { //Manejo de errores
+            $ok = $stmt->execute(); //Ejecutando consulta
+            if ($ok) return (int)$this->conn->lastInsertId();
+            return false;
+        } catch (PDOException $e) { //Manejo de errores específico para PDO
             error_log($e->getMessage()); //Imprimimos el error en consola
-            return null; //Retornamos valor vacio
+            // Devolver información estructurada para que el controlador la mapee
+            $info = $e->errorInfo ?? null;
+            return [
+                'error' => $e->getMessage(),
+                'code' => $e->getCode(),
+                'errorInfo' => $info,
+            ];
+        } catch (Exception $e) {
+            error_log($e->getMessage());
+            return ['error' => $e->getMessage()];
         }
     }
 }

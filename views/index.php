@@ -5,6 +5,18 @@ if (!isset($_SESSION['usuario'])) {
   exit();
 }
 $usuario = $_SESSION['usuario']['nombre'];
+// Obtener número de servicios activos mediante el modelo
+require_once __DIR__ . '/../config/Conexion.php';
+require_once __DIR__ . '/../models/servicioModel.php';
+try {
+  $con = new Conexion();
+  $cn = $con->conectar();
+  $servicioModel = new servicioModel($cn);
+  $servicios_count = $servicioModel->countActive();
+} catch (Exception $e) {
+  error_log('Error obteniendo conteo de servicios: ' . $e->getMessage());
+  $servicios_count = 0;
+}
 
 include 'layout/header.php';
 ?>
@@ -37,10 +49,10 @@ include 'layout/header.php';
         </div>
       </div>
       <div class="col-md-3">
-        <div class="card p-4 text-center">
+          <div class="card p-4 text-center">
           <i class="bi bi-brush text-gradient"></i>
           <h5>Servicios activos</h5>
-          <p class="fs-4 fw-bold">18</p>
+          <p class="fs-4 fw-bold"><?php echo $servicios_count; ?></p>
         </div>
       </div>
       <div class="col-md-3">

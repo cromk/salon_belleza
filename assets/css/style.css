@@ -1,5 +1,9 @@
 body.login {
-  background: linear-gradient(135deg, #f9f4fc, #f0e7fa, #ffffff);
+  /* Imagen de fondo + overlay degradado */
+  background-image: linear-gradient(rgba(249,244,252,0.65), rgba(240,231,250,0.65)), url('/salon_belleza/views/IMG/login.webp');
+  background-size: cover;
+  background-position: center center;
+  background-repeat: no-repeat;
   font-family: 'Poppins', sans-serif;
   height: 100vh;
   display: flex;
@@ -8,12 +12,14 @@ body.login {
 }
 
 .card1 {
-  width: 420px;
+  width: 520px;
+  max-width: 92%;
   border: none;
   border-radius: 20px;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-  background: #fffdfc;
+  box-shadow: 0 12px 30px rgba(0,0,0,0.12);
+  background: rgba(255,255,255,0.92);
   transition: all 0.3s ease;
+  padding: 2.25rem; /* refuerza el espaciado interior */
 }
 
 .card1:hover {
@@ -32,19 +38,24 @@ body.login {
 
 .btn-login {
   background: linear-gradient(90deg, #8a2be2, #b76eff);
-  color: #fff;
-  border-radius: 10px;
-  font-weight: 600;
+  color: #ffffff !important;
+  border-radius: 30px; /* más redondeado */
+  font-weight: 700;
   border: none;
+  padding: 0.85rem 1.25rem; /* más alto y ancho */
+  font-size: 1.02rem;
+  height: 52px;
 }
 
 .btn-login:hover {
   background: linear-gradient(90deg, #a65dfc, #8a2be2);
+  transform: translateY(-2px);
 }
 
 .brand-icon {
   font-size: 3.5rem;
   background: linear-gradient(90deg, #8a2be2, #b76eff);
+  background-clip: text;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
@@ -133,18 +144,108 @@ body.index{
   padding: 25px;
 }
 
-table th {
-  background-color: #8a2be2;
-  color: white;
+/* Modern card-like table: rounded header, soft shadows, hover lift */
+.card .table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  border-radius: 12px;
+  overflow: hidden;
+  background: transparent;
+}
+
+.card .table thead th {
+  background: linear-gradient(90deg, #7c3bd6 0%, #b48ff7 100%);
+  color: #fff;
+  border: none;
+  padding: 10px 12px;
+  text-transform: uppercase;
+  font-size: 0.72rem; /* más compacto */
+  font-weight: 700;
+  letter-spacing: 0.03em;
+}
+
+.card .table thead th:first-child { border-top-left-radius: 12px; }
+.card .table thead th:last-child { border-top-right-radius: 12px; }
+
+.card .table tbody {
+  background: #fff;
+  box-shadow: 0 6px 18px rgba(75,40,109,0.04);
+  border-radius: 0 0 12px 12px;
+}
+
+.card .table tbody tr {
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
+}
+
+.card .table tbody tr:nth-child(even) td {
+  background: #fcfbfe; /* muy sutil */
+}
+
+.card .table tbody tr:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 20px rgba(75,40,109,0.06);
+}
+
+.card .table tbody td {
+  padding: 10px 12px; /* reducir padding para filas más compactas */
+  vertical-align: middle;
+  border: none;
+  font-size: 0.92rem;
+}
+
+.card .table tbody td:first-child {
+  width: 48px; /* columna índice más compacta */
+  text-align: center;
+  color: #7b4aa3;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.card .table tbody td:nth-child(3),
+.card .table tbody td:nth-child(4) {
+  text-align: right; /* numeric columns aligned right */
+  font-weight: 600;
+  color: #4b286d;
+  font-size: 0.92rem;
+}
+
+.card .table .empty-row td {
+  text-align: center;
+  color: #9b8ac9;
+  padding: 18px;
 }
 
 .btn-primary {
-  background-color: #8a2be2;
+  background: linear-gradient(90deg,#8a2be2,#b48ff7);
   border: none;
+  box-shadow: 0 4px 12px rgba(138,43,226,0.06);
+  padding: 0.5rem 0.75rem;
+  font-size: 0.92rem;
 }
 
 .btn-primary:hover {
-  background-color: #6f2ebf;
+  transform: translateY(-1px);
+  box-shadow: 0 8px 18px rgba(138,43,226,0.08);
+}
+
+/* Icons and action buttons compact */
+.btn-group .btn {
+  padding: 6px 8px;
+  min-width: 36px;
+  height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-group .btn i {
+  font-size: 0.9rem; /* iconos más pequeños */
+}
+
+.btn-sm {
+  padding: 4px 6px;
+  font-size: 0.86rem;
 }
 
 /*******************************************************************/
@@ -162,4 +263,49 @@ table th {
 
 .footer a:hover {
   color: #ffdaff;
+}
+
+/* ===== Catalog styles ===== */
+.service-card {
+  background: linear-gradient(180deg, #ffffff 0%, #fbf9ff 100%);
+  border-radius: 10px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+.service-header {
+  background: linear-gradient(90deg, #7c3bd6 0%, #b48ff7 100%);
+  padding: 18px;
+}
+.service-header h5 { font-weight: 700; margin: 0; }
+.service-body { background: #fff; }
+.service-card:hover { transform: translateY(-6px); box-shadow: 0 14px 30px rgba(75,40,109,0.08); }
+.total-price { font-size: 1.05rem; color: #4b286d; }
+.total-time { color: #6b5aa8; }
+.service-card .btn-primary { background: linear-gradient(90deg,#8a2be2,#b48ff7); border: none; }
+
+/* Catalog search controls */
+.catalog-controls { gap: 10px; }
+.catalog-logo { filter: drop-shadow(0 4px 8px rgba(124,59,214,0.12)); }
+.search-input { padding-right: 2.5rem; }
+.search-suggestions {
+  position: absolute;
+  top: 42px;
+  right: 0;
+  left: 0;
+  z-index: 1050;
+  max-height: 240px;
+  overflow: auto;
+  box-shadow: 0 8px 20px rgba(75,40,109,0.08);
+}
+.search-suggestions .list-group-item { cursor: pointer; }
+
+@media (max-width: 576px) {
+  .catalog-controls { flex-direction: column-reverse; align-items: stretch; }
+  .catalog-logo { display: none; }
+}
+
+/* responsive smaller cards */
+@media (max-width: 767px) {
+  .service-media { height: 120px !important; }
 }

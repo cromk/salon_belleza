@@ -1,20 +1,37 @@
 $(document).ready(function () {
 
-	$("#loginForm").on("submit", function(e) {
+    $("#loginForm").on("submit", function(e) {
       e.preventDefault();
+
+      const btn = $('#btnLogin');
+      btn.prop('disabled', true).attr('aria-busy', 'true');
 
       let usuario = $("#usuario").val().trim();
       let password = $("#password").val().trim();
 
-      $.post("controllers/usuarioController.php", { action: "login", usuario, password }, function(res) {
-        if (res.success) {
+      // Petición AJAX más robusta
+      $.ajax({
+        url: "controllers/usuarioController.php",
+        method: 'POST',
+        dataType: 'json',
+        data: { action: "login", usuario, password },
+        timeout: 10000
+      }).done(function(res) {
+        if (res && res.success) {
+          // Redirigir al panel
           window.location.href = "views/index.php";
         } else {
-          $("#mensaje").removeClass("d-none").text(res.message || "Credenciales incorrectas");
+          const msg = (res && res.message) ? res.message : "Usuario o contraseña incorrectos";
+          $("#mensaje").removeClass("d-none alert-success").addClass("alert-danger").text(msg);
         }
-      }, "json")
-      .fail(() => {
-        $("#mensaje").removeClass("d-none").text("Error de conexión con el servidor");
+      }).fail(function(jqXHR, textStatus, errorThrown) {
+        // Manejo de errores: mostrar mensaje útil
+        let msg = "Error de conexión con el servidor";
+        if (textStatus === 'timeout') msg = 'La petición tardó demasiado. Intenta de nuevo.';
+        $("#mensaje").removeClass("d-none alert-success").addClass("alert-danger").text(msg);
+      }).always(function() {
+        // Siempre reactivar el botón para permitir reintentos
+        btn.prop('disabled', false).removeAttr('aria-busy');
       });
     });
     
