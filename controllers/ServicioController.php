@@ -3,6 +3,7 @@ header('Content-Type: application/json');
 require_once __DIR__ . '/../config/Conexion.php';
 require_once __DIR__ . '/../models/servicioModel.php';
 require_once __DIR__ . '/../models/especificacionModel.php';
+require_once __DIR__ . '/../config/logger.php';
 
 // Iniciar sesión para comprobaciones de rol
 if (session_status() == PHP_SESSION_NONE) session_start();
@@ -72,6 +73,51 @@ switch ($action) {
         if (!is_numeric($valor_precio)) $valor_precio = 0.00;
         $res = $espModel->create($id_servicio, $nombre, $tipo, number_format((float)$valor_precio, 2, '.', ''), intval($valor_tiempo), $descripcion);
         if ($res) echo json_encode(['success' => true, 'id' => $res]); else echo json_encode(['success' => false, 'message' => 'Error creando especificación']);
+        break;
+
+    case 'update':
+        // Actualizar servicio (solo admin)
+        if (!isset($_SESSION['usuario']) || (int)($_SESSION['usuario']['id_rol'] ?? 0) !== 1) {
+            echo json_encode(['success' => false, 'message' => 'No autorizado']); exit;
+        }
+        $id = isset($_POST['id_servicio']) ? intval($_POST['id_servicio']) : 0;
+        $nombre = trim($_POST['nombre'] ?? '');
+        $precio = $_POST['precio'] ?? null;
+        $duracion = $_POST['duracion'] ?? null;
+        $descripcion = trim($_POST['descripcion'] ?? '');
+
+        if ($id <= 0 || $nombre === '') { echo json_encode(['success' => false, 'message' => 'Datos inválidos']); exit; }
+        if (!is_numeric($precio) || floatval($precio) < 0) { echo json_encode(['success' => false, 'message' => 'Precio inválido']); exit; }
+        if (!is_numeric($duracion) || intval($duracion) <= 0) { echo json_encode(['success' => false, 'message' => 'Duración inválida']); exit; }
+
+        $old = $model->getById($id);
+        $ok = $model->update($id, $nombre, number_format((float)$precio, 2, '.', ''), intval($duracion), $descripcion);
+        if ($ok) {
+            $userId = $_SESSION['usuario']['id_usuario'] ?? ($_SESSION['usuario']['id'] ?? 0);
+            log_change($userId, 'update_service', ['id' => $id, 'old' => $old, 'new' => ['nombre'=>$nombre,'precio_base'=>$precio,'duracion_base'=>$duracion,'descripcion'=>$descripcion]]);
+            echo json_encode(['success' => true]);
+        } else {
+            echo json_encode(['success' => false, 'message' => 'Error al actualizar servicio']);
+        }
+        break;
+
+    case 'delete':
+        // Eliminar (soft) servicio — solo admin
+        if (!isset($_SESSION['usuario']) || (int)($_SESSION['usuario']['id_rol'] ?? 0) !== 1) {
+            echo json_encode(['success' => false, 'message' => 'No autorizado']); exit;
+        }
+        $id = isset($_POST['id_servicio']) ? intval($_POST['id_servicio']) : 0;
+        if ($id <= 0) { echo json_encode(['success' => false, 'message' => 'Servicio inválido']); exit; }
+        $old = $model->getById($id);
+        // Soft-delete: marcar estado como Inactivo
+        $ok = $model->setEstado($id, 'Inactivo');
+        if ($ok) {
+            $userId = $_SESSION['usuario']['id_usuario'] ?? ($_SESSION['usuario']['id'] ?? 0);
+            log_change($userId, 'delete_service', ['id' => $id, 'old' => $old]);
+            echo json_encode(['success' => true]);
+        } else {
+            echo json_encode(['success' => false, 'message' => 'Error al eliminar servicio']);
+        }
         break;
 
     case 'getSpecifications':

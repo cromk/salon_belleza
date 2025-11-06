@@ -21,6 +21,7 @@ include 'layout/header.php';
         <div class="card p-4">
           <h5 class="mb-3 text-gradient"><i class="bi bi-brush"></i> Crear Servicio</h5>
           <form id="formServicio">
+            <input type="hidden" id="id_servicio" name="id_servicio">
             <div class="mb-3">
               <label class="form-label">Nombre</label>
               <input type="text" id="nombre" name="nombre" class="form-control" required>
@@ -50,7 +51,7 @@ include 'layout/header.php';
           <h5 class="mb-3"><i class="bi bi-list-check"></i> Servicios existentes</h5>
           <table class="table table-bordered table-striped align-middle" id="tablaServicios">
             <thead>
-              <tr><th>#</th><th>Nombre</th><th>Precio</th><th>Duración</th></tr>
+              <tr><th>#</th><th>Nombre</th><th>Precio</th><th>Duración</th><th>Acciones</th></tr>
             </thead>
             <tbody></tbody>
           </table>
