@@ -2,7 +2,12 @@ document.addEventListener('DOMContentLoaded', function() {
   const target = document.getElementById('catalogoServicios');
   const searchInput = document.getElementById('searchCatalog');
   const suggestionsEl = document.getElementById('searchSuggestions');
+  const filterStylist = document.getElementById('filterStylist');
+  const filterStylistSuggestions = document.getElementById('filterStylistSuggestions');
+  const filterServiceType = document.getElementById('filterServiceType');
   let servicesData = [];
+  let serviceMap = {};
+  let stylistsList = [];
 
   function formatPrice(p) {
     return Number(p).toFixed(2);
@@ -99,15 +104,84 @@ document.addEventListener('DOMContentLoaded', function() {
     return text.replace(/[&<>\"']/g, function(c) { return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":"&#39;"}[c]; });
   }
 
-  // fetch services (includes especificaciones when controller was updated)
-  fetch('/salon_belleza/controllers/ServicioController.php?action=read')
+  // fetch catalog data (services + especificaciones + stylists)
+  fetch('/salon_belleza/controllers/ServicioController.php?action=catalogData')
     .then(r => r.json())
     .then(res => {
       if (res.success) {
-        servicesData = res.data || [];
+        servicesData = res.data.services || [];
+        serviceMap = res.data.serviceMap || {};
+        stylistsList = res.data.stylists || [];
+        populateFilters();
         renderServicios(servicesData);
+      } else {
+        console.error('No autorizado o error:', res.message);
+        // fallback: try public read
+        return fetch('/salon_belleza/controllers/ServicioController.php?action=read').then(r=>r.json()).then(r2=>{ if(r2.success){ servicesData=r2.data||[]; renderServicios(servicesData); } });
       }
     }).catch(err => console.error(err));
+
+  function populateFilters(){
+    // populate stylist suggestions map
+    const stylistsByName = {};
+    if(filterStylist && stylistsList && stylistsList.length){
+      stylistsList.forEach(s => {
+        // map by display name
+        stylistsByName[s.nombre] = s.id_estilista;
+      });
+      // attach input listener to show suggestions
+      filterStylist.addEventListener('input', debounce(function(){
+        const q = (this.value || '').trim().toLowerCase();
+        if(!q){ filterStylistSuggestions.classList.add('d-none'); filterStylistSuggestions.innerHTML = ''; applyFilters(); return; }
+        const matches = stylistsList.filter(st => (st.nombre || '').toLowerCase().includes(q)).slice(0,8);
+        if(!matches.length){ filterStylistSuggestions.classList.add('d-none'); filterStylistSuggestions.innerHTML = ''; return; }
+        filterStylistSuggestions.innerHTML = matches.map(m => `<li class="list-group-item list-group-item-action stylist-suggestion" data-id="${m.id_estilista}">${escapeHtml(m.nombre)}</li>`).join('');
+        filterStylistSuggestions.classList.remove('d-none');
+        // attach click handlers
+        filterStylistSuggestions.querySelectorAll('.stylist-suggestion').forEach(li => li.addEventListener('click', function(){
+          filterStylist.value = this.textContent;
+          filterStylist.dataset.selectedEst = this.dataset.id;
+          filterStylistSuggestions.classList.add('d-none');
+          applyFilters();
+        }));
+      }, 160));
+      // hide suggestions when clicking outside
+      document.addEventListener('click', function(e){ if(!e.target.closest('#filterStylistSuggestions') && !e.target.closest('#filterStylist')) { filterStylistSuggestions.classList.add('d-none'); } });
+    }
+    if(filterServiceType && servicesData && servicesData.length){
+      // fill service select with service names
+      servicesData.forEach(s => {
+        const opt = document.createElement('option'); opt.value = s.id_servicio; opt.textContent = s.nombre; filterServiceType.appendChild(opt);
+      });
+    }
+    if(filterServiceType) filterServiceType.addEventListener('change', applyFilters);
+  }
+
+  function applyFilters(){
+    let filtered = servicesData.slice();
+    const sId = filterServiceType ? filterServiceType.value : '';
+    // obtener id de estilista: si el input tiene data-selectedEst lo usamos, sino intentamos buscar por nombre
+    let estId = '';
+    if(filterStylist){
+      if(filterStylist.dataset && filterStylist.dataset.selectedEst) estId = filterStylist.dataset.selectedEst;
+      else {
+        const name = (filterStylist.value || '').trim();
+        if(name){
+          const found = stylistsList.find(st => st.nombre === name);
+          if(found) estId = found.id_estilista;
+        }
+      }
+    }
+    if(sId){ filtered = filtered.filter(s => String(s.id_servicio) === String(sId)); }
+    if(estId){
+      // filter services that are offered by selected stylist
+      filtered = filtered.filter(s => {
+        const list = serviceMap[s.id_servicio] || [];
+        return list.includes(parseInt(estId));
+      });
+    }
+    renderServicios(filtered);
+  }
 
   // --- Search / suggestions logic ---
   function debounce(fn, wait) {

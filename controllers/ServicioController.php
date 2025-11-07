@@ -56,6 +56,42 @@ switch ($action) {
         echo json_encode(['success' => true, 'data' => $data]);
         break;
 
+    case 'catalogData':
+        // Datos extendidos para catálogo (servicios + especificaciones + estilistas por servicio)
+        // Restringir acceso a roles internos: admin(1), recepcionista(2), estilista(3)
+        $allowed = [1,2,3];
+        $role = isset($_SESSION['usuario']['id_rol']) ? (int)$_SESSION['usuario']['id_rol'] : 0;
+        if (!in_array($role, $allowed)) { echo json_encode(['success'=>false,'message'=>'No autorizado']); exit; }
+        try {
+            $onlyActive = true;
+            $services = $model->getAll($onlyActive);
+            foreach ($services as &$s) {
+                $s['especificaciones'] = $espModel->getByService($s['id_servicio'], $onlyActive);
+            }
+            // obtener estilistas y mapeo servicio -> estilistas
+            $stmt = $db->prepare("SELECT es.id_estilista, es.id_servicio, e.id_usuario, u.nombre, u.apellido FROM estilista_servicio es JOIN estilistas e ON es.id_estilista = e.id_estilista JOIN usuarios u ON e.id_usuario = u.id_usuario WHERE 1");
+            $stmt->execute();
+            $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            $stylists = [];
+            $map = []; // servicio -> [id_estilista,...]
+            foreach ($rows as $r) {
+                $id_est = (int)$r['id_estilista'];
+                if (!isset($stylists[$id_est])) {
+                    $stylists[$id_est] = ['id_estilista'=>$id_est, 'id_usuario'=>(int)$r['id_usuario'], 'nombre'=>trim($r['nombre'].' '.$r['apellido'])];
+                }
+                $sid = (int)$r['id_servicio'];
+                if (!isset($map[$sid])) $map[$sid] = [];
+                if (!in_array($id_est, $map[$sid])) $map[$sid][] = $id_est;
+            }
+            // reindex stylists array
+            $stylistsList = array_values($stylists);
+
+            echo json_encode(['success'=>true,'data'=>['services'=>$services,'stylists'=>$stylistsList,'serviceMap'=>$map]]);
+        } catch (Exception $e) {
+            echo json_encode(['success'=>false,'message'=>'Error leyendo catálogo','detail'=>$e->getMessage()]);
+        }
+        break;
+
     case 'addSpecification':
         // Verificar rol: solo administradores
         if (!isset($_SESSION['usuario']) || (int)($_SESSION['usuario']['id_rol'] ?? 0) !== 1) {

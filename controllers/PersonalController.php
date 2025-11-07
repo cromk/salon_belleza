@@ -84,8 +84,10 @@ switch ($action) {
             $stmt = $db->prepare("SELECT id_estilista FROM estilistas WHERE id_usuario = :u LIMIT 1");
             $stmt->execute([':u'=>$uid]);
             $row = $stmt->fetch(PDO::FETCH_ASSOC);
-            if ($row) echo json_encode(['success'=>true,'data'=>['id_estilista'=>(int)$row['id_estilista']]]);
-            else echo json_encode(['success'=>false,'message'=>'No eres estilista o no estás registrado en la tabla estilistas']);
+            $id_rol = isset($_SESSION['usuario']['id_rol']) ? (int)$_SESSION['usuario']['id_rol'] : 0;
+            $response = ['id_rol'=>$id_rol, 'id_usuario'=>$uid];
+            if ($row) $response['id_estilista'] = (int)$row['id_estilista'];
+            echo json_encode(['success'=>true,'data'=>$response]);
         } catch (Exception $e) {
             error_log('getMyEstilista error: '.$e->getMessage());
             echo json_encode(['success'=>false,'message'=>'Error obteniendo estilista']);
@@ -128,9 +130,11 @@ switch ($action) {
     case 'getAgenda':
         // Devuelve horario base y citas (incluye bloqueos) para una fecha y estilista
         // Si no se recibe 'fecha', devolvemos todas las citas del estilista (sin horarios)
-        $id_estilista = isset($_GET['id_estilista']) ? intval($_GET['id_estilista']) : 0;
-        $fecha = isset($_GET['fecha']) && $_GET['fecha'] !== '' ? $_GET['fecha'] : null;
-        if ($id_estilista <= 0) { echo json_encode(['success'=>false,'message'=>'Parámetros inválidos']); exit; }
+    $id_estilista = isset($_GET['id_estilista']) ? intval($_GET['id_estilista']) : 0;
+    $fecha = isset($_GET['fecha']) && $_GET['fecha'] !== '' ? $_GET['fecha'] : null;
+    // permitir id_estilista == 0 para usuarios autorizados (admin=1, recepcionista=2) -> verá todas las citas
+    $role = isset($_SESSION['usuario']['id_rol']) ? (int)$_SESSION['usuario']['id_rol'] : 0;
+    if ($id_estilista <= 0 && !in_array($role, [1,2])) { echo json_encode(['success'=>false,'message'=>'Parámetros inválidos']); exit; }
         try {
             $horarios = [];
             $citas = [];
@@ -146,17 +150,32 @@ switch ($action) {
                 $stmt->execute();
                 $horarios = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-                $stmt2 = $db->prepare("SELECT c.id_cita, c.id_cliente, cl.nombre AS cliente_nombre, cl.apellido AS cliente_apellido, c.id_servicio, s.nombre AS servicio_nombre, c.fecha_cita, c.hora_inicio, c.hora_fin, c.estado, c.observaciones FROM citas c LEFT JOIN clientes cl ON c.id_cliente = cl.id_cliente LEFT JOIN servicios s ON c.id_servicio = s.id_servicio WHERE c.id_estilista = :e AND c.fecha_cita = :f");
-                $stmt2->bindParam(':e', $id_estilista, PDO::PARAM_INT);
-                $stmt2->bindParam(':f', $fecha);
-                $stmt2->execute();
-                $citas = $stmt2->fetchAll(PDO::FETCH_ASSOC);
+                if ($id_estilista > 0) {
+                    $stmt2 = $db->prepare("SELECT c.id_cita, c.id_cliente, cl.nombre AS cliente_nombre, cl.apellido AS cliente_apellido, c.id_servicio, s.nombre AS servicio_nombre, c.id_estilista, est.id_usuario AS estilista_id_usuario, uest.nombre AS estilista_nombre, uest.apellido AS estilista_apellido, c.fecha_cita, c.hora_inicio, c.hora_fin, c.estado, c.observaciones FROM citas c LEFT JOIN clientes cl ON c.id_cliente = cl.id_cliente LEFT JOIN servicios s ON c.id_servicio = s.id_servicio LEFT JOIN estilistas est ON c.id_estilista = est.id_estilista LEFT JOIN usuarios uest ON est.id_usuario = uest.id_usuario WHERE c.id_estilista = :e AND c.fecha_cita = :f");
+                    $stmt2->bindParam(':e', $id_estilista, PDO::PARAM_INT);
+                    $stmt2->bindParam(':f', $fecha);
+                    $stmt2->execute();
+                    $citas = $stmt2->fetchAll(PDO::FETCH_ASSOC);
+                } else {
+                    // id_estilista == 0 y usuario autorizado: devolver todas las citas de la fecha
+                    $stmt2 = $db->prepare("SELECT c.id_cita, c.id_cliente, cl.nombre AS cliente_nombre, cl.apellido AS cliente_apellido, c.id_servicio, s.nombre AS servicio_nombre, c.id_estilista, est.id_usuario AS estilista_id_usuario, uest.nombre AS estilista_nombre, uest.apellido AS estilista_apellido, c.fecha_cita, c.hora_inicio, c.hora_fin, c.estado, c.observaciones FROM citas c LEFT JOIN clientes cl ON c.id_cliente = cl.id_cliente LEFT JOIN servicios s ON c.id_servicio = s.id_servicio LEFT JOIN estilistas est ON c.id_estilista = est.id_estilista LEFT JOIN usuarios uest ON est.id_usuario = uest.id_usuario WHERE c.fecha_cita = :f");
+                    $stmt2->bindParam(':f', $fecha);
+                    $stmt2->execute();
+                    $citas = $stmt2->fetchAll(PDO::FETCH_ASSOC);
+                }
             } else {
                 // devolver todas las citas del estilista (sin filtrar por fecha)
-                $stmt2 = $db->prepare("SELECT c.id_cita, c.id_cliente, cl.nombre AS cliente_nombre, cl.apellido AS cliente_apellido, c.id_servicio, s.nombre AS servicio_nombre, c.fecha_cita, c.hora_inicio, c.hora_fin, c.estado, c.observaciones FROM citas c LEFT JOIN clientes cl ON c.id_cliente = cl.id_cliente LEFT JOIN servicios s ON c.id_servicio = s.id_servicio WHERE c.id_estilista = :e ORDER BY c.fecha_cita, c.hora_inicio");
-                $stmt2->bindParam(':e', $id_estilista, PDO::PARAM_INT);
-                $stmt2->execute();
-                $citas = $stmt2->fetchAll(PDO::FETCH_ASSOC);
+                if ($id_estilista > 0) {
+                    $stmt2 = $db->prepare("SELECT c.id_cita, c.id_cliente, cl.nombre AS cliente_nombre, cl.apellido AS cliente_apellido, c.id_servicio, s.nombre AS servicio_nombre, c.id_estilista, est.id_usuario AS estilista_id_usuario, uest.nombre AS estilista_nombre, uest.apellido AS estilista_apellido, c.fecha_cita, c.hora_inicio, c.hora_fin, c.estado, c.observaciones FROM citas c LEFT JOIN clientes cl ON c.id_cliente = cl.id_cliente LEFT JOIN servicios s ON c.id_servicio = s.id_servicio LEFT JOIN estilistas est ON c.id_estilista = est.id_estilista LEFT JOIN usuarios uest ON est.id_usuario = uest.id_usuario WHERE c.id_estilista = :e ORDER BY c.fecha_cita, c.hora_inicio");
+                    $stmt2->bindParam(':e', $id_estilista, PDO::PARAM_INT);
+                    $stmt2->execute();
+                    $citas = $stmt2->fetchAll(PDO::FETCH_ASSOC);
+                } else {
+                    // id_estilista == 0 y usuario autorizado: devolver todas las citas
+                    $stmt2 = $db->prepare("SELECT c.id_cita, c.id_cliente, cl.nombre AS cliente_nombre, cl.apellido AS cliente_apellido, c.id_servicio, s.nombre AS servicio_nombre, c.id_estilista, est.id_usuario AS estilista_id_usuario, uest.nombre AS estilista_nombre, uest.apellido AS estilista_apellido, c.fecha_cita, c.hora_inicio, c.hora_fin, c.estado, c.observaciones FROM citas c LEFT JOIN clientes cl ON c.id_cliente = cl.id_cliente LEFT JOIN servicios s ON c.id_servicio = s.id_servicio LEFT JOIN estilistas est ON c.id_estilista = est.id_estilista LEFT JOIN usuarios uest ON est.id_usuario = uest.id_usuario ORDER BY c.fecha_cita, c.hora_inicio");
+                    $stmt2->execute();
+                    $citas = $stmt2->fetchAll(PDO::FETCH_ASSOC);
+                }
             }
 
             echo json_encode(['success'=>true,'data'=>['horarios'=>$horarios,'citas'=>$citas]]);

@@ -17,8 +17,12 @@ include 'layout/header.php';
         </svg>
       </div>
       <div style="min-width:260px; max-width:420px; width:40%; position:relative;">
-        <input id="searchCatalog" class="form-control search-input" placeholder="Buscar servicios'..." aria-label="Buscar servicios">
+        <input id="searchCatalog" class="form-control search-input" placeholder="Buscar servicios..." aria-label="Buscar servicios">
         <ul id="searchSuggestions" class="list-group search-suggestions d-none"></ul>
+      </div>
+      <div class="ms-2" style="min-width:260px; max-width:420px; width:40%; position:relative;">
+        <input id="filterStylist" class="form-control search-input" placeholder="Filtrar por estilista..." aria-label="Filtrar por estilista">
+        <ul id="filterStylistSuggestions" class="list-group search-suggestions d-none" style="position:absolute; z-index:1050; width:100%;"></ul>
       </div>
     </div>
     <div class="row" id="catalogoServicios">
