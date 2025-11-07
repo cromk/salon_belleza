@@ -26,6 +26,7 @@ function nav_active($name, $currentFile) {
           <li class="nav-item"><a class="nav-link <?php echo nav_active('servicios.php', $currentFile); ?>" href="/salon_belleza/views/servicios.php"><i class="bi bi-brush"></i> Servicios</a></li>
           <?php if (isset($_SESSION['usuario']) && (int)($_SESSION['usuario']['id_rol'] ?? 0) === 1): ?>
             <li class="nav-item"><a class="nav-link <?php echo nav_active('personal.php', $currentFile); ?>" href="/salon_belleza/views/personal.php"><i class="bi bi-people"></i> Personal</a></li>
+            <li class="nav-item"><a class="nav-link <?php echo nav_active('agenda.php', $currentFile); ?>" href="/salon_belleza/views/agenda.php"><i class="bi bi-calendar2-week"></i> Agenda</a></li>
           <?php endif; ?>
         </ul>
 
