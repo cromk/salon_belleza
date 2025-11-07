@@ -8,6 +8,7 @@ document.addEventListener('DOMContentLoaded', function() {
   let servicesData = [];
   let serviceMap = {};
   let stylistsList = [];
+  let selectedServiceId = null;
 
   function formatPrice(p) {
     return Number(p).toFixed(2);
@@ -65,6 +66,24 @@ document.addEventListener('DOMContentLoaded', function() {
         </div>`;
 
       target.appendChild(col);
+      // make card selectable: click anywhere on the card selects the service
+      const card = col.querySelector('.service-card');
+      if (card) {
+        card.style.cursor = 'pointer';
+        card.addEventListener('click', function(e){
+          // ignore clicks on inputs/buttons inside the card (like opciones or checkboxes)
+          if (e.target.closest('button') || e.target.closest('input') || e.target.closest('a')) return;
+          // clear previous selection
+          document.querySelectorAll('.service-card.selected-service').forEach(c => {
+            c.classList.remove('selected-service');
+            c.classList.remove('border','border-3','border-primary');
+          });
+          // mark this one
+          card.classList.add('selected-service');
+          card.classList.add('border','border-3','border-primary');
+          selectedServiceId = s.id_servicio;
+        });
+      }
     });
 
     // attach listeners
@@ -155,6 +174,71 @@ document.addEventListener('DOMContentLoaded', function() {
       });
     }
     if(filterServiceType) filterServiceType.addEventListener('change', applyFilters);
+    // disponibilidad: botón y modal (si existe)
+    const btnDisp = document.getElementById('btnVerDisponibilidad');
+    if(btnDisp && filterStylist){
+      btnDisp.addEventListener('click', function(){
+        // Validación: debe haber un servicio seleccionado
+        if(!selectedServiceId){
+          // mostrar mensaje claro
+          alert('Selecciona un servicio del catálogo antes de ver la disponibilidad. Haz clic en la tarjeta del servicio para seleccionarlo.');
+          return;
+        }
+        // obtener id de estilista usando dataset o buscando por nombre
+        let estId = filterStylist.dataset && filterStylist.dataset.selectedEst ? filterStylist.dataset.selectedEst : '';
+        if(!estId){
+          const name = (filterStylist.value||'').trim();
+          const found = stylistsList.find(st => st.nombre === name);
+          if(found) estId = found.id_estilista;
+        }
+        if(!estId){
+          alert('Selecciona o escribe y elige un estilista válido para ver la disponibilidad.');
+          return;
+        }
+        // preparar modal
+        const modalEl = document.getElementById('availabilityModal');
+        const availEstDisplay = document.getElementById('availEstilistaDisplay');
+        const availFecha = document.getElementById('availFecha');
+        const availSlotsArea = document.getElementById('availSlotsArea');
+        const stylistObj = stylistsList.find(s=> String(s.id_estilista) === String(estId));
+        availEstDisplay.value = stylistObj ? stylistObj.nombre : estId;
+        // si no hay fecha, usar hoy
+        const today = new Date().toISOString().substr(0,10);
+        availFecha.value = today;
+        availSlotsArea.innerHTML = 'Cargando...';
+        // show modal (Bootstrap)
+        const m = new bootstrap.Modal(modalEl); m.show();
+        // fetch slots
+        fetchSlots(estId, availFecha.value, availSlotsArea);
+        // cambiar fecha -> recargar
+        availFecha.addEventListener('change', function(){ fetchSlots(estId, this.value, availSlotsArea); });
+      });
+    }
+  }
+
+  function fetchSlots(estId, fecha, targetEl){
+    targetEl.innerHTML = 'Cargando...';
+    fetch(`/salon_belleza/controllers/PersonalController.php?action=getAvailableSlots&id_estilista=${encodeURIComponent(estId)}&fecha=${encodeURIComponent(fecha)}`)
+      .then(r=>r.json()).then(res=>{
+        if(!res.success){ targetEl.innerHTML = `<div class="alert alert-warning">${res.message||'No disponible'}</div>`; return; }
+        const slots = res.data || [];
+        if(!slots.length){ targetEl.innerHTML = '<div class="text-muted">No hay slots libres para la fecha seleccionada.</div>'; return; }
+        let html = '<div class="list-group">';
+        slots.forEach(s => {
+          html += `<button class="list-group-item list-group-item-action avail-slot" data-start="${s.hora_inicio}" data-end="${s.hora_fin}">${s.hora_inicio} - ${s.hora_fin}</button>`;
+        });
+        html += '</div>';
+        targetEl.innerHTML = html;
+        // attach click handlers to choose slot (for future booking)
+        targetEl.querySelectorAll('.avail-slot').forEach(btn => btn.addEventListener('click', function(){
+          const st = this.dataset.start; const en = this.dataset.end;
+          // copy to clipboard as simple action or in future populate booking form
+          navigator.clipboard && navigator.clipboard.writeText(`${st} - ${en}`);
+          this.classList.add('active');
+          const info = document.createElement('div'); info.className='mt-2 small text-success'; info.textContent = 'Hora copiada al portapapeles. En próximas versiones rellenará el formulario de reserva.';
+          targetEl.appendChild(info);
+        }));
+      }).catch(err=>{ targetEl.innerHTML = `<div class="alert alert-danger">Error cargando disponibilidad</div>`; });
   }
 
   function applyFilters(){

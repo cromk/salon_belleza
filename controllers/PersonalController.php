@@ -40,6 +40,66 @@ switch ($action) {
         }
         break;
 
+        case 'getAvailableSlots':
+            // Devuelve intervalos libres (no bloqueos) para un estilista y fecha
+            $id_estilista = isset($_GET['id_estilista']) ? intval($_GET['id_estilista']) : 0;
+            $fecha = isset($_GET['fecha']) && $_GET['fecha'] !== '' ? $_GET['fecha'] : null;
+            if ($id_estilista <= 0 || !$fecha) { echo json_encode(['success'=>false,'message'=>'Parámetros inválidos']); exit; }
+            try {
+                // obtener día en español
+                $ts = strtotime($fecha);
+                $dias = ['Monday'=>'Lunes','Tuesday'=>'Martes','Wednesday'=>'Miércoles','Thursday'=>'Jueves','Friday'=>'Viernes','Saturday'=>'Sábado','Sunday'=>'Domingo'];
+                $dia_nombre = $dias[date('l', $ts)];
+
+                // obtener horarios para ese día
+                $stmt = $db->prepare("SELECT hora_inicio, hora_fin FROM horarios WHERE id_estilista = :e AND dia_semana = :d");
+                $stmt->execute([':e'=>$id_estilista, ':d'=>$dia_nombre]);
+                $horarios = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+                // obtener citas reales (excluir bloqueos) para esa fecha y estilista
+                $stmt2 = $db->prepare("SELECT hora_inicio, hora_fin FROM citas WHERE id_estilista = :e AND fecha_cita = :f AND (observaciones IS NULL OR LEFT(observaciones,8) <> 'BLOQUEO:') ORDER BY hora_inicio");
+                $stmt2->execute([':e'=>$id_estilista, ':f'=>$fecha]);
+                $booked = $stmt2->fetchAll(PDO::FETCH_ASSOC);
+
+                $free = [];
+                // helper para restar booked intervals de un intervalo base
+                foreach ($horarios as $h) {
+                    $baseStart = $h['hora_inicio'];
+                    $baseEnd = $h['hora_fin'];
+                    $cursor = $baseStart;
+                    foreach ($booked as $b) {
+                        $bstart = $b['hora_inicio'];
+                        $bend = $b['hora_fin'];
+                        // si la cita está completamente antes del cursor o después del baseEnd ignorar
+                        if ($bend <= $cursor || $bstart >= $baseEnd) continue;
+                        // hay espacio entre cursor y bstart
+                        if ($bstart > $cursor) {
+                            $free[] = ['hora_inicio'=>$cursor, 'hora_fin'=>($bstart> $baseEnd? $baseEnd : $bstart)];
+                        }
+                        // avanzar cursor al final de la cita
+                        if ($bend > $cursor) $cursor = $bend;
+                        if ($cursor >= $baseEnd) break;
+                    }
+                    if ($cursor < $baseEnd) {
+                        $free[] = ['hora_inicio'=>$cursor, 'hora_fin'=>$baseEnd];
+                    }
+                }
+
+                // normalizar y devolver (eliminar duplicados si hay)
+                $normalized = [];
+                foreach ($free as $f) {
+                    if (strtotime($f['hora_fin']) <= strtotime($f['hora_inicio'])) continue;
+                    $k = $f['hora_inicio'].'-'.$f['hora_fin'];
+                    if (!isset($normalized[$k])) $normalized[$k] = $f;
+                }
+                $result = array_values($normalized);
+                echo json_encode(['success'=>true,'data'=>$result]);
+            } catch (Exception $e) {
+                error_log('getAvailableSlots error: ' . $e->getMessage());
+                echo json_encode(['success'=>false,'message'=>'Error obteniendo disponibilidad']);
+            }
+            break;
+
     case 'readEstilistas':
         $data = $model->getAll();
         // Adjuntar servicios por estilista

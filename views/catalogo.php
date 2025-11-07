@@ -24,9 +24,41 @@ include 'layout/header.php';
         <input id="filterStylist" class="form-control search-input" placeholder="Filtrar por estilista..." aria-label="Filtrar por estilista">
         <ul id="filterStylistSuggestions" class="list-group search-suggestions d-none" style="position:absolute; z-index:1050; width:100%;"></ul>
       </div>
+      <?php $role = $_SESSION['usuario']['id_rol'] ?? 0; if ($role == 2): ?>
+      <div class="ms-2">
+        <button id="btnVerDisponibilidad" class="btn btn-outline-primary btn-sm">Ver disponibilidad</button>
+      </div>
+      <?php endif; ?>
     </div>
     <div class="row" id="catalogoServicios">
       <!-- servicios serán cargados vía AJAX -->
+    </div>
+    <!-- Modal disponibilidad -->
+    <div class="modal fade" id="availabilityModal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Disponibilidad</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <div class="row g-2 mb-3 align-items-end">
+              <div class="col-md-6">
+                <label class="form-label">Estilista</label>
+                <input id="availEstilistaDisplay" class="form-control" disabled>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Fecha</label>
+                <input id="availFecha" type="date" class="form-control" value="">
+              </div>
+            </div>
+            <div id="availSlotsArea">Cargando...</div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 
