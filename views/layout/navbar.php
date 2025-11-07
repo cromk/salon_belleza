@@ -21,7 +21,7 @@ function nav_active($name, $currentFile) {
       <div class="collapse navbar-collapse" id="navbarNav">
         <ul class="navbar-nav me-auto">
           <li class="nav-item"><a class="nav-link <?php echo nav_active('index', $currentFile); ?>" href="/salon_belleza/views/index.php"><i class="bi bi-house-door"></i> Inicio</a></li>
-          <li class="nav-item"><a class="nav-link <?php echo nav_active('citas.php', $currentFile); ?>" href="/salon_belleza/views/citas.php"><i class="bi bi-calendar2-check"></i> Citas</a></li>
+          <li class="nav-item"><a class="nav-link <?php echo nav_active('mis_citas.php', $currentFile); ?>" href="/salon_belleza/views/mis_citas.php"><i class="bi bi-calendar2-check"></i> Citas</a></li>
           <li class="nav-item"><a class="nav-link <?php echo nav_active('clientes.php', $currentFile); ?>" href="/salon_belleza/views/clientes.php"><i class="bi bi-person-hearts"></i> Clientes</a></li>
           <li class="nav-item"><a class="nav-link <?php echo nav_active('servicios.php', $currentFile); ?>" href="/salon_belleza/views/servicios.php"><i class="bi bi-brush"></i> Servicios</a></li>
           <?php if (isset($_SESSION['usuario']) && (int)($_SESSION['usuario']['id_rol'] ?? 0) === 1): ?>

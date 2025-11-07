@@ -309,3 +309,20 @@ body.index{
 @media (max-width: 767px) {
   .service-media { height: 120px !important; }
 }
+
+/* Icon-only buttons for compact filter controls */
+.icon-btn{
+  width:40px;
+  height:40px;
+  padding:0;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  border-radius:8px;
+}
+.icon-btn i{
+  font-size:1.15rem;
+}
+.icon-btn.btn-sm{ width:34px; height:34px; }
+.icon-btn:focus{ box-shadow: 0 0 0 0.15rem rgba(138,43,226,0.15); }
+
