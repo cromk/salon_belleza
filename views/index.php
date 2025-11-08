@@ -81,7 +81,7 @@ include 'layout/header.php';
           // contar clientes reales (excluir clientes marcador para bloqueos cuyo correo comience con 'bloqueo@')
           $clientes_count = 0;
           try {
-            $q = $cn->prepare("SELECT COUNT(*) as cnt FROM clientes WHERE correo NOT LIKE 'bloqueo@%'");
+            $q = $cn->prepare("SELECT COUNT(*) as cnt FROM clientes WHERE correo NOT LIKE 'bloqueo@%' AND estado = 'Activo'");
             $q->execute();
             $clientes_count = (int)$q->fetchColumn();
           } catch (Exception $e) {
