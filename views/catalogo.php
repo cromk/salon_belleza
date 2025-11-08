@@ -28,6 +28,9 @@ include 'layout/header.php';
       <div class="ms-2">
         <button id="btnVerDisponibilidad" class="btn btn-outline-primary btn-sm">Ver disponibilidad</button>
       </div>
+        <div class="ms-2">
+          <button id="btnReservarDesdeModal" class="btn btn-primary btn-sm d-none">Reservar</button>
+        </div>
       <?php endif; ?>
     </div>
     <div class="row" id="catalogoServicios">

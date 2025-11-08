@@ -7,8 +7,8 @@ include 'layout/header.php';
     <?php $role = $_SESSION['usuario']['id_rol'] ?? 0; ?>
     <div class="d-flex justify-content-between align-items-center mb-4">
       <div>
-        <h2><?php echo ($role == 2) ? 'Citas' : 'Mis Citas'; ?></h2>
-        <p class="text-muted"><?php echo ($role == 2) ? 'Listado de citas del salón. Usa el filtro de estilista para ver las citas por profesional.' : 'Vista personal de tus citas asignadas. Actualiza automáticamente y muestra todas tus citas por defecto si no aplicas filtros.'; ?></p>
+        <h2><?php echo ($role == 2 || $role == 1) ? 'Citas' : 'Mis Citas'; ?></h2>
+        <p class="text-muted"><?php echo ($role == 2 || $role == 1) ? 'Listado de citas del salón. Usa el filtro de estilista para ver las citas por profesional.' : 'Vista personal de tus citas asignadas. Actualiza automáticamente y muestra todas tus citas por defecto si no aplicas filtros.'; ?></p>
       </div>
     </div>
 
@@ -26,7 +26,7 @@ include 'layout/header.php';
           <label class="form-label">Hasta (HH:MM)</label>
           <input type="time" id="filterHasta" class="form-control" value="23:59">
         </div>
-        <?php if ($role == 2): /* sólo recepcionistas */ ?>
+        <?php if ($role == 2 || $role == 1): /* recepcionistas y admin */ ?>
         <div class="col-md-3">
           <label class="form-label">Estilista</label>
           <select id="filterEstilista" class="form-select">

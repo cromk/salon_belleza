@@ -109,6 +109,89 @@ switch ($action) {
         echo json_encode(['success' => true, 'data' => $data]);
         break;
 
+    case 'createCita':
+        // Crear una cita (usada por recepcionista)
+        if (session_status() == PHP_SESSION_NONE) session_start();
+        $role = isset($_SESSION['usuario']['id_rol']) ? (int)$_SESSION['usuario']['id_rol'] : 0;
+        // permitir solo recepcionista y admin (1,2)
+        if (!in_array($role, [1,2])) { echo json_encode(['success'=>false,'message'=>'No autorizado']); exit; }
+        // datos mínimos
+        $id_servicio = isset($_POST['id_servicio']) ? intval($_POST['id_servicio']) : 0;
+        $id_estilista = isset($_POST['id_estilista']) ? intval($_POST['id_estilista']) : 0;
+        $fecha = isset($_POST['fecha']) ? trim($_POST['fecha']) : null;
+        $hora_inicio = isset($_POST['hora_inicio']) ? trim($_POST['hora_inicio']) : null;
+        $hora_fin = isset($_POST['hora_fin']) ? trim($_POST['hora_fin']) : null;
+        $total = isset($_POST['total']) ? floatval($_POST['total']) : 0.0;
+        $observaciones = isset($_POST['observaciones']) ? trim($_POST['observaciones']) : '';
+        // cliente info (si existe correo, rehuso; si no, crear)
+        $cliente_nombre = isset($_POST['cliente_nombre']) ? trim($_POST['cliente_nombre']) : '';
+        $cliente_apellido = isset($_POST['cliente_apellido']) ? trim($_POST['cliente_apellido']) : '';
+        $cliente_telefono = isset($_POST['cliente_telefono']) ? trim($_POST['cliente_telefono']) : '';
+        $cliente_correo = isset($_POST['cliente_correo']) ? trim($_POST['cliente_correo']) : '';
+
+        if ($id_servicio <= 0 || $id_estilista <= 0 || !$fecha || !$hora_inicio || !$hora_fin) {
+            echo json_encode(['success'=>false,'message'=>'Parámetros inválidos']); exit;
+        }
+        try {
+            // comprobar conflictos con citas existentes (no contar bloqueos)
+            $chk = $db->prepare("SELECT id_cita, hora_inicio, hora_fin, observaciones FROM citas WHERE id_estilista = :e AND fecha_cita = :f AND NOT (hora_fin <= :hi OR hora_inicio >= :hf)");
+            $chk->execute([':e'=>$id_estilista, ':f'=>$fecha, ':hi'=>$hora_inicio, ':hf'=>$hora_fin]);
+            $conf = $chk->fetchAll(PDO::FETCH_ASSOC);
+            $realConf = array_filter($conf, function($r){ return stripos($r['observaciones'] ?? '', 'BLOQUEO:') !== 0; });
+            if (count($realConf) > 0) {
+                echo json_encode(['success'=>false,'message'=>'Conflicto con citas existentes','conflicts'=>$realConf]); exit;
+            }
+
+            // obtener o crear cliente
+            $id_cliente = null;
+            if ($cliente_correo) {
+                $stmt = $db->prepare("SELECT id_cliente FROM clientes WHERE correo = :c LIMIT 1");
+                $stmt->execute([':c'=>$cliente_correo]);
+                $row = $stmt->fetch(PDO::FETCH_ASSOC);
+                if ($row) $id_cliente = $row['id_cliente'];
+            }
+            if (!$id_cliente) {
+                // crear cliente mínimo
+                $insc = $db->prepare("INSERT INTO clientes (nombre, apellido, telefono, correo) VALUES (:n,:a,:t,:c)");
+                $insc->execute([':n'=>$cliente_nombre?:'Cliente', ':a'=>$cliente_apellido?:'', ':t'=>$cliente_telefono?:'', ':c'=>$cliente_correo?:'']);
+                $id_cliente = $db->lastInsertId();
+            }
+
+            // insertar cita (y opcionalmente especificaciones)
+            $db->beginTransaction();
+            $ins = $db->prepare("INSERT INTO citas (id_cliente, id_estilista, id_servicio, fecha_cita, hora_inicio, hora_fin, total, estado, observaciones) VALUES (:ic, :ie, :is, :f, :hi, :hf, :t, :st, :obs)");
+            $estado = 'Confirmada';
+            $ins->execute([':ic'=>$id_cliente, ':ie'=>$id_estilista, ':is'=>$id_servicio, ':f'=>$fecha, ':hi'=>$hora_inicio, ':hf'=>$hora_fin, ':t'=>$total, ':st'=>$estado, ':obs'=>$observaciones]);
+            $newId = $db->lastInsertId();
+
+            // si se enviaron especificaciones (ids), insertarlas en la tabla de relación
+            $espRaw = $_POST['especificaciones'] ?? null;
+            if ($espRaw) {
+                if (!is_array($espRaw)) {
+                    // puede venir como JSON string
+                    $espArr = json_decode($espRaw, true);
+                    if (!is_array($espArr)) $espArr = [];
+                } else {
+                    $espArr = $espRaw;
+                }
+                if (!empty($espArr)) {
+                    $insEsp = $db->prepare("INSERT INTO cita_especificacion (id_cita, id_especificacion) VALUES (:id_cita, :id_especificacion)");
+                    foreach ($espArr as $ide) {
+                        $ideInt = intval($ide);
+                        if ($ideInt <= 0) continue;
+                        $insEsp->execute([':id_cita'=>$newId, ':id_especificacion'=>$ideInt]);
+                    }
+                }
+            }
+
+            $db->commit();
+            echo json_encode(['success'=>true,'id_cita'=>(int)$newId]);
+        } catch (Exception $e) {
+            error_log('createCita error: '.$e->getMessage());
+            echo json_encode(['success'=>false,'message'=>'Error creando cita']);
+        }
+        break;
+
     case 'assignServices':
         // Solo admin
         if (!isset($_SESSION['usuario']) || (int)($_SESSION['usuario']['id_rol'] ?? 0) !== 1) {

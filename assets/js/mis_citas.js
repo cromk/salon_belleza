@@ -65,8 +65,8 @@ document.addEventListener('DOMContentLoaded', function(){
     }
 
     let html = '';
-    // Mostrar horario base solo si no es recepcionista
-    if (myRole !== 2) {
+    // Mostrar horario base sólo para estilistas (rol 3). Admin y recepcionista ven la lista de citas sin el horario base
+    if (myRole === 3) {
       html += '<div class="card p-3 mb-3">';
       html += '<h5>Horario base</h5>';
       if(h.length===0){
