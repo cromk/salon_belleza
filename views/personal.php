@@ -113,6 +113,24 @@ include 'layout/header.php';
               <label class="form-label">Servicios que ofrece</label>
               <div id="listaServicios" class="d-flex flex-column" style="max-height:200px; overflow:auto; border:1px solid #eee; padding:8px; border-radius:6px;"></div>
             </div>
+            <div class="mb-3">
+              <label class="form-label">Horario base (agrega uno o más)</label>
+              <div class="d-flex g-2 align-items-end mb-2">
+                <select id="horario_dia" class="form-select me-2" style="width:150px;"> 
+                  <option value="Lunes">Lunes</option>
+                  <option value="Martes">Martes</option>
+                  <option value="Miércoles">Miércoles</option>
+                  <option value="Jueves">Jueves</option>
+                  <option value="Viernes">Viernes</option>
+                  <option value="Sábado">Sábado</option>
+                  <option value="Domingo">Domingo</option>
+                </select>
+                <input id="horario_hi" type="time" class="form-control me-2" style="width:130px;" />
+                <input id="horario_hf" type="time" class="form-control me-2" style="width:130px;" />
+                <button id="btnAddHorario" type="button" class="btn btn-outline-secondary">Añadir</button>
+              </div>
+              <div id="horariosList" style="min-height:40px;"></div>
+            </div>
             <div class="d-grid">
               <button type="submit" class="btn"><i class="bi bi-save"></i> Guardar estilista</button>
             </div>

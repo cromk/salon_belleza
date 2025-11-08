@@ -74,6 +74,29 @@ class estilistaModel {
         }
     }
 
+    public function assignHorarios($id_estilista, $horarios = []) {
+        try {
+            // eliminar horarios previos
+            $del = $this->conn->prepare("DELETE FROM horarios WHERE id_estilista = :id_estilista");
+            $del->execute([':id_estilista' => $id_estilista]);
+
+            if (empty($horarios) || !is_array($horarios)) return true;
+            $ins = $this->conn->prepare("INSERT INTO horarios (id_estilista, dia_semana, hora_inicio, hora_fin) VALUES (:id_estilista, :dia_semana, :hora_inicio, :hora_fin)");
+            foreach ($horarios as $h) {
+                // esperar estructura: ['dia_semana'=>'Lunes','hora_inicio'=>'09:00','hora_fin'=>'17:00']
+                $dia = $h['dia_semana'] ?? null;
+                $hi = $h['hora_inicio'] ?? null;
+                $hf = $h['hora_fin'] ?? null;
+                if (!$dia || !$hi || !$hf) continue;
+                $ins->execute([':id_estilista' => $id_estilista, ':dia_semana' => $dia, ':hora_inicio' => $hi, ':hora_fin' => $hf]);
+            }
+            return true;
+        } catch (Exception $e) {
+            error_log('assignHorarios error: ' . $e->getMessage());
+            return false;
+        }
+    }
+
     public function getServices($id_estilista) {
         try {
             $query = "SELECT s.id_servicio, s.nombre FROM estilista_servicio es JOIN servicios s ON s.id_servicio = es.id_servicio WHERE es.id_estilista = :id";

@@ -4,6 +4,39 @@ document.addEventListener('DOMContentLoaded', function() {
   const tablaBody = document.querySelector('#tablaEstilistas tbody');
   const form = document.getElementById('formEstilista');
   const mensaje = document.getElementById('mensajeEstilista');
+  const btnAddHorario = document.getElementById('btnAddHorario');
+  const horariosList = document.getElementById('horariosList');
+  const horarioDia = document.getElementById('horario_dia');
+  const horarioHi = document.getElementById('horario_hi');
+  const horarioHf = document.getElementById('horario_hf');
+
+  let horarios = [];
+
+  function renderHorarios() {
+    if (!horariosList) return;
+    horariosList.innerHTML = '';
+    horarios.forEach((h, idx) => {
+      const div = document.createElement('div');
+      div.className = 'd-flex align-items-center gap-2 mb-1';
+      div.innerHTML = `<small class="text-muted">${h.dia_semana} ${h.hora_inicio} - ${h.hora_fin}</small> <button type="button" class="btn btn-sm btn-link text-danger" data-idx="${idx}">Eliminar</button>`;
+      horariosList.appendChild(div);
+    });
+    // attach delete
+    horariosList.querySelectorAll('button[data-idx]').forEach(b => { b.addEventListener('click', function(){ const i = parseInt(this.dataset.idx); horarios.splice(i,1); renderHorarios(); }); });
+  }
+
+  if (btnAddHorario) {
+    btnAddHorario.addEventListener('click', function(){
+      const dia = horarioDia.value;
+      const hi = horarioHi.value;
+      const hf = horarioHf.value;
+      if (!dia || !hi || !hf) { alert('Complete día, hora inicio y hora fin'); return; }
+      if (hi >= hf) { alert('Hora inicio debe ser menor que hora fin'); return; }
+      horarios.push({ dia_semana: dia, hora_inicio: hi, hora_fin: hf });
+      renderHorarios();
+      horarioHi.value = ''; horarioHf.value = '';
+    });
+  }
 
   function loadUsuarios() {
     fetch('/salon_belleza/controllers/PersonalController.php?action=getUsuariosByRole&role=3')
@@ -53,6 +86,11 @@ document.addEventListener('DOMContentLoaded', function() {
     const services = [];
     form.querySelectorAll('input[name="services"]:checked').forEach(ch => services.push(ch.value));
 
+    // agregar horarios al form data
+    if (horarios && horarios.length > 0) {
+      fd.append('horarios', JSON.stringify(horarios));
+    }
+
     fd.append('action','createEstilista');
     fd.append('services', JSON.stringify(services));
 
@@ -61,8 +99,15 @@ document.addEventListener('DOMContentLoaded', function() {
         if (res.success) {
           mensaje.classList.remove('d-none'); mensaje.classList.remove('alert-danger'); mensaje.classList.add('alert-success');
           mensaje.textContent = 'Estilista creado correctamente.';
+          // limpiar formulario y estado local de horarios
           form.reset();
+          horarios = [];
+          try { renderHorarios(); } catch(e) { /* noop */ }
           loadServicios(); loadUsuarios(); loadEstilistas();
+          // ocultar la notificación de éxito automáticamente tras 15 segundos
+          setTimeout(() => {
+            try { mensaje.classList.add('d-none'); } catch(e) {}
+          }, 15000);
         } else {
           mensaje.classList.remove('d-none'); mensaje.classList.remove('alert-success'); mensaje.classList.add('alert-danger');
           mensaje.textContent = res.message || 'Error al crear estilista.';

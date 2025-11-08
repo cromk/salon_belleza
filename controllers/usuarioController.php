@@ -19,11 +19,31 @@ switch($action){
         $res = $modelo->verificarUsuario($usuario, $password);
 
         if ($res) {
+            // Si el usuario es Estilista (id_rol == 3), verificar que exista en tabla estilistas
+            $isEstilista = isset($res['id_rol']) && intval($res['id_rol']) === 3;
+            if ($isEstilista) {
+                try {
+                    $chk = $cn->prepare("SELECT id_estilista FROM estilistas WHERE id_usuario = :uid LIMIT 1");
+                    $chk->bindParam(':uid', $res['id_usuario'], PDO::PARAM_INT);
+                    $chk->execute();
+                    $found = $chk->fetch(PDO::FETCH_ASSOC);
+                    if (!$found) {
+                        echo json_encode(["success" => false, "message" => "Acceso denegado: El usuario existe pero aun no tiene permisos para ingresar consulte con su administrador."]);
+                        break;
+                    }
+                } catch (Exception $e) {
+                    // en caso de error en la comprobación, negar acceso por seguridad
+                    error_log('Login estilista check error: ' . $e->getMessage());
+                    echo json_encode(["success" => false, "message" => "Error verificando permisos. Intente más tarde."]);
+                    break;
+                }
+            }
             session_start();
             $_SESSION['usuario'] = $res;
             echo json_encode(["success" => true]);
-        } else
+        } else {
             echo json_encode(["success" => false, "message" => "Usuario o contraseña incorrectos"]);
+        }
         break;
 
     case 'create':
