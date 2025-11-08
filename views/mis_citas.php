@@ -5,17 +5,14 @@ include 'layout/header.php';
   <?php include 'layout/navbar.php'; ?>
   <div class="container mt-5">
     <?php $role = $_SESSION['usuario']['id_rol'] ?? 0; ?>
-    <div class="d-flex justify-content-between align-items-center mb-4">
-      <div>
-        <h2><?php echo ($role == 2 || $role == 1) ? 'Citas' : 'Mis Citas'; ?>
-          <!-- notificaciones internas: ícono con badge -->
-          <button id="notifBtn" type="button" class="btn btn-link p-0 ms-3" title="Notificaciones">
-            <i class="bi bi-bell" style="font-size:1.1rem;"></i>
-            <span id="notifBadge" class="badge bg-danger" style="display:none; font-size:0.7rem; vertical-align:top;">0</span>
-          </button>
-        </h2>
-        <p class="text-muted"><?php echo ($role == 2 || $role == 1) ? 'Listado de citas del salón. Usa el filtro de estilista para ver las citas por profesional.' : 'Vista personal de tus citas asignadas. Actualiza automáticamente y muestra todas tus citas por defecto si no aplicas filtros.'; ?></p>
-      </div>
+    <div class="text-center mb-4">
+      <h3 class="section-title mb-4 text-center"><?php echo ($role == 2 || $role == 1) ? 'Citas 📅' : 'Mis Citas 📅'; ?>
+        <button id="notifBtn" type="button" class="btn btn-link p-0 ms-2" title="Notificaciones" style="vertical-align:middle;">
+          <i class="bi bi-bell" style="font-size:1.05rem;"></i>
+          <span id="notifBadge" class="badge bg-danger" style="display:none; font-size:0.7rem; vertical-align:top;">0</span>
+        </button>
+      </h3>
+      <p class="text-muted"><?php echo ($role == 2 || $role == 1) ? 'Listado de citas del salón. Usa el filtro de estilista para ver las citas por profesional.' : 'Vista personal de tus citas asignadas. Actualiza automáticamente y muestra todas tus citas por defecto si no aplicas filtros.'; ?></p>
     </div>
 
     <div class="card p-3 mb-4">

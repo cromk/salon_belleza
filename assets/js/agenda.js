@@ -5,7 +5,7 @@ document.addEventListener('DOMContentLoaded', function(){
   const agendaArea = document.getElementById('agendaArea');
 
   function loadEstilistas(){
-    // usar endpoint readEstilistas para obtener id_estilista (no id_usuario)
+    // usar endpoint readEstilistas para obtener id_estilista 
     fetch('/salon_belleza/controllers/PersonalController.php?action=readEstilistas')
       .then(r=>r.json()).then(res=>{
         if(res.success){
@@ -15,7 +15,6 @@ document.addEventListener('DOMContentLoaded', function(){
   }
 
   function renderAgenda(data){
-    // data: {horarios:[], citas:[]}
     const h = data.horarios || [];
     const c = data.citas || [];
     let html = '';

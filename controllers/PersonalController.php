@@ -60,6 +60,18 @@ switch ($action) {
                     $model->assignServices($res, $services);
                 }
             }
+            // Si se enviaron horarios, asociarlos (esperamos JSON array)
+            $horariosRaw = $_POST['horarios'] ?? null;
+            if ($horariosRaw) {
+                if (!is_array($horariosRaw)) {
+                    $horariosArr = json_decode($horariosRaw, true) ?? [];
+                } else {
+                    $horariosArr = $horariosRaw;
+                }
+                if (is_array($horariosArr) && !empty($horariosArr)) {
+                    $model->assignHorarios($res, $horariosArr);
+                }
+            }
             echo json_encode(['success' => true, 'id' => (int)$res]);
         } else {
             echo json_encode(['success' => false, 'message' => 'Error creando estilista']);
@@ -232,14 +244,23 @@ switch ($action) {
 
     case 'getUsuariosByRole':
         // Devuelve usuarios por rol (por defecto estilista id=3)
+        // EXCLUYE usuarios que ya tienen un registro en la tabla 'estilistas'
         $role = isset($_GET['role']) ? intval($_GET['role']) : 3;
         try {
-            $stmt = $db->prepare("SELECT id_usuario, nombre, apellido FROM usuarios WHERE id_rol = :r AND estado = 'Activo' ORDER BY nombre");
+            $stmt = $db->prepare(
+                "SELECT u.id_usuario, u.nombre, u.apellido
+                 FROM usuarios u
+                 WHERE u.id_rol = :r
+                   AND u.estado = 'Activo'
+                   AND NOT EXISTS (SELECT 1 FROM estilistas e WHERE e.id_usuario = u.id_usuario)
+                 ORDER BY u.nombre"
+            );
             $stmt->bindParam(':r', $role, PDO::PARAM_INT);
             $stmt->execute();
             $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
             echo json_encode(['success' => true, 'data' => $rows]);
         } catch (Exception $e) {
+            error_log('getUsuariosByRole error: ' . $e->getMessage());
             echo json_encode(['success' => false, 'message' => 'Error leyendo usuarios']);
         }
         break;

@@ -5,7 +5,7 @@ include 'layout/header.php';
   <?php include 'layout/navbar.php'; ?>
   <div class="container mt-5">
     <div class="text-center mb-4">
-      <h2>Catálogo de Servicios</h2>
+      <h3 class="section-title mb-4 text-center">Catálogo de Servicios 💇‍♀️</h3>
       <p class="text-muted">Elige el servicio que prefieras</p>
     </div>
     <div class="d-flex justify-content-end align-items-center mb-3 catalog-controls">

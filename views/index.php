@@ -77,7 +77,19 @@ include 'layout/header.php';
         <div class="card p-4 text-center">
           <i class="bi bi-person-hearts text-gradient"></i>
           <h5>Clientes</h5>
-          <p class="fs-4 fw-bold">248</p>
+          <?php
+          // contar clientes reales (excluir clientes marcador para bloqueos cuyo correo comience con 'bloqueo@')
+          $clientes_count = 0;
+          try {
+            $q = $cn->prepare("SELECT COUNT(*) as cnt FROM clientes WHERE correo NOT LIKE 'bloqueo@%'");
+            $q->execute();
+            $clientes_count = (int)$q->fetchColumn();
+          } catch (Exception $e) {
+            error_log('Error contando clientes: '.$e->getMessage());
+            $clientes_count = 0;
+          }
+          ?>
+          <p class="fs-4 fw-bold"><?php echo $clientes_count; ?></p>
         </div>
       </div>
       <div class="col-md-3">

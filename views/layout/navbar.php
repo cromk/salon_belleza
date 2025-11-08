@@ -1,13 +1,24 @@
 <?php
+// Asegurarnos de que la sesión esté iniciada antes de leer datos de $_SESSION
+if (session_status() == PHP_SESSION_NONE) session_start();
+
 // Determinar la ruta actual para marcar el enlace activo
 $requestPath = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
 $currentFile = basename($requestPath);
 
 function nav_active($name, $currentFile) {
-  if ($name === 'index') {
-    return ($currentFile === 'index.php' || $currentFile === '') ? 'active' : '';
-  }
-  return ($currentFile === $name) ? 'active' : '';
+  // Normalizar: quitar sufijo .php y comparar en minúsculas
+  $normalize = function($s) {
+    $s = trim(strtolower((string)$s));
+    if ($s === '') return 'index';
+    if (substr($s, -4) === '.php') $s = substr($s, 0, -4);
+    return $s;
+  };
+  $nName = $normalize($name);
+  $nCurrent = $normalize($currentFile);
+  // Mapear alias: tratar catalogo.php como servicios para mantener el mismo enlace activo
+  if ($nCurrent === 'catalogo') $nCurrent = 'servicios';
+  return ($nName === $nCurrent) ? 'active' : '';
 }
 ?>
 

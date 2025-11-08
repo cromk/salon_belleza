@@ -19,8 +19,6 @@ document.addEventListener('DOMContentLoaded', function() {
     data.forEach(s => {
       const col = document.createElement('div');
       col.className = 'col-md-4 mb-4';
-
-      // build specs inputs inside a collapse
       let specsHtml = '';
       const collapseId = `specs-collapse-${s.id_servicio}`;
       if (s.especificaciones && s.especificaciones.length) {
@@ -65,12 +63,11 @@ document.addEventListener('DOMContentLoaded', function() {
         </div>`;
 
       target.appendChild(col);
-      // make card selectable: click anywhere on the card selects the service
       const card = col.querySelector('.service-card');
       if (card) {
         card.style.cursor = 'pointer';
         card.addEventListener('click', function(e){
-          // ignore clicks on inputs/buttons inside the card (like opciones or checkboxes)
+          
           if (e.target.closest('button') || e.target.closest('input') || e.target.closest('a')) return;
           // clear previous selection
           document.querySelectorAll('.service-card.selected-service').forEach(c => {
@@ -107,7 +104,7 @@ document.addEventListener('DOMContentLoaded', function() {
       } else if (tipo === 'tiempo') {
         totalTime += parseInt(ch.dataset.tiempo) || 0;
       } else {
-        // ambos o sin tipo definido
+      
         totalPrice += parseFloat(ch.dataset.precio) || 0;
         totalTime += parseInt(ch.dataset.tiempo) || 0;
       }
@@ -122,7 +119,6 @@ document.addEventListener('DOMContentLoaded', function() {
     return text.replace(/[&<>\"']/g, function(c) { return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":"&#39;"}[c]; });
   }
 
-  // fetch catalog data (services + especificaciones + stylists)
   fetch('/salon_belleza/controllers/ServicioController.php?action=catalogData')
     .then(r => r.json())
     .then(res => {
@@ -173,17 +169,17 @@ document.addEventListener('DOMContentLoaded', function() {
       });
     }
     if(filterServiceType) filterServiceType.addEventListener('change', applyFilters);
-    // disponibilidad: botón y modal (si existe)
+    
     const btnDisp = document.getElementById('btnVerDisponibilidad');
     if(btnDisp && filterStylist){
       btnDisp.addEventListener('click', function(){
-        // Validación: debe haber un servicio seleccionado
+        
         if(!selectedServiceId){
-          // mostrar mensaje claro
+          
           alert('Selecciona un servicio del catálogo antes de ver la disponibilidad. Haz clic en la tarjeta del servicio para seleccionarlo.');
           return;
         }
-        // obtener id de estilista usando dataset o buscando por nombre
+        
         let estId = filterStylist.dataset && filterStylist.dataset.selectedEst ? filterStylist.dataset.selectedEst : '';
         if(!estId){
           const name = (filterStylist.value||'').trim();
