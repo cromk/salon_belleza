@@ -38,6 +38,7 @@ function nav_active($name, $currentFile) {
           <?php if (isset($_SESSION['usuario']) && (int)($_SESSION['usuario']['id_rol'] ?? 0) === 1): ?>
             <li class="nav-item"><a class="nav-link <?php echo nav_active('personal.php', $currentFile); ?>" href="/salon_belleza/views/personal.php"><i class="bi bi-people"></i> Personal</a></li>
             <li class="nav-item"><a class="nav-link <?php echo nav_active('agenda.php', $currentFile); ?>" href="/salon_belleza/views/agenda.php"><i class="bi bi-calendar2-week"></i> Agenda</a></li>
+            <li class="nav-item"><a class="nav-link <?php echo nav_active('reportes.php', $currentFile); ?>" href="/salon_belleza/views/reportes.php"><i class="bi bi-graph-up"></i> Reportes</a></li>
           <?php endif; ?>
         </ul>
 
