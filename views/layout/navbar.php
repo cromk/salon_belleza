@@ -39,6 +39,7 @@ function nav_active($name, $currentFile) {
             <li class="nav-item"><a class="nav-link <?php echo nav_active('personal.php', $currentFile); ?>" href="/salon_belleza/views/personal.php"><i class="bi bi-people"></i> Personal</a></li>
             <li class="nav-item"><a class="nav-link <?php echo nav_active('promociones.php', $currentFile); ?>" href="/salon_belleza/views/promociones.php"><i class="bi bi-gift"></i> Promociones</a></li>
             <li class="nav-item"><a class="nav-link <?php echo nav_active('agenda.php', $currentFile); ?>" href="/salon_belleza/views/agenda.php"><i class="bi bi-calendar2-week"></i> Agenda</a></li>
+            <li class="nav-item"><a class="nav-link <?php echo nav_active('reportes.php', $currentFile); ?>" href="/salon_belleza/views/reportes.php"><i class="bi bi-graph-up"></i> Reportes</a></li>
           <?php endif; ?>
         </ul>
 
