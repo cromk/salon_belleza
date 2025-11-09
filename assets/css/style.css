@@ -326,3 +326,7 @@ body.index{
 .icon-btn.btn-sm{ width:34px; height:34px; }
 .icon-btn:focus{ box-shadow: 0 0 0 0.15rem rgba(138,43,226,0.15); }
 
+.bi .bi-envelope .bi-telephone{
+  height: 1%;
+  width: 1%;
+}
