@@ -369,6 +369,18 @@ INSERT INTO `usuarios` (`id_usuario`, `nombre`, `apellido`, `correo`, `telefono`
 (3, 'Andrea', 'Flores', 'andrea@salonbelleza.com', '7555-2222', 'andrea', '123456', 3, 'Activo', '2025-10-14 09:08:22');
 
 --
+-- Estructura de tabla para la tabla `pagos`
+--
+CREATE TABLE `pagos` (
+  `id_pago` INT(11) NOT NULL,
+  `id_cita` INT(11) NOT NULL,
+  `metodo` VARCHAR(50),
+  `monto` DECIMAL(10,2),
+  `referencia` VARCHAR(100),
+  `estado` ENUM('Pendiente','Completado','Fallido') DEFAULT 'Pendiente',
+  `fecha_pago` datetime DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+--
 -- Índices para tablas volcadas
 --
 
@@ -380,6 +392,13 @@ ALTER TABLE `citas`
   ADD KEY `id_cliente` (`id_cliente`),
   ADD KEY `id_estilista` (`id_estilista`),
   ADD KEY `id_servicio` (`id_servicio`);
+
+--
+-- Indices de la tabla `pagos`
+--
+ALTER TABLE `pagos`
+  ADD PRIMARY KEY (`id_pago`),
+  ADD KEY `id_cita` (`id_cita`);
 
 --
 -- Indices de la tabla `cita_especificacion`
@@ -487,6 +506,12 @@ ALTER TABLE `citas`
 --
 ALTER TABLE `clientes`
   MODIFY `id_cliente` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+
+--
+-- AUTO_INCREMENT de la tabla `pagos`
+--
+ALTER TABLE `pagos`
+  MODIFY `id_pago` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT de la tabla `combos`
@@ -612,6 +637,12 @@ ALTER TABLE `ofertas`
 ALTER TABLE `usuarios`
   ADD CONSTRAINT `usuarios_ibfk_1` FOREIGN KEY (`id_rol`) REFERENCES `roles` (`id_rol`);
 COMMIT;
+
+--
+-- Campo nuevo para la tabla `citas`
+--
+ALTER TABLE citas ADD COLUMN estado_pago VARCHAR(50) DEFAULT 'Pendiente';
+
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;

@@ -35,6 +35,9 @@ function nav_active($name, $currentFile) {
           <li class="nav-item"><a class="nav-link <?php echo nav_active('mis_citas.php', $currentFile); ?>" href="/salon_belleza/views/mis_citas.php"><i class="bi bi-calendar2-check"></i> Citas</a></li>
           <li class="nav-item"><a class="nav-link <?php echo nav_active('clientes.php', $currentFile); ?>" href="/salon_belleza/views/clientes.php"><i class="bi bi-person-hearts"></i> Clientes</a></li>
           <li class="nav-item"><a class="nav-link <?php echo nav_active('servicios.php', $currentFile); ?>" href="/salon_belleza/views/servicios.php"><i class="bi bi-brush"></i> Servicios</a></li>
+          <?php if (isset($_SESSION['usuario']) && (int)($_SESSION['usuario']['id_rol'] ?? 0) === 2): ?>
+          <li class="nav-item"><a class="nav-link <?php echo nav_active('pagos.php', $currentFile); ?>" href="/salon_belleza/views/pagos.php"><i class="bi bi-cash-stack"></i> Pagos</a></li>
+          <?php endif; ?>
           <?php if (isset($_SESSION['usuario']) && (int)($_SESSION['usuario']['id_rol'] ?? 0) === 1): ?>
             <li class="nav-item"><a class="nav-link <?php echo nav_active('personal.php', $currentFile); ?>" href="/salon_belleza/views/personal.php"><i class="bi bi-people"></i> Personal</a></li>
             <li class="nav-item"><a class="nav-link <?php echo nav_active('promociones.php', $currentFile); ?>" href="/salon_belleza/views/promociones.php"><i class="bi bi-gift"></i> Promociones</a></li>

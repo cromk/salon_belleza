@@ -53,7 +53,7 @@ class reporteModel {
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
   }
 
-  // Ocupación de estilistas (HU-20)
+  // Ocupación de estilistas
   public function ocupacionEstilistas($fechaInicio = null, $fechaFin = null) {
     $sql = "SELECT u.nombre AS estilista, COUNT(c.id_cita) AS citas
             FROM citas c
