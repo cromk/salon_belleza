@@ -646,7 +646,7 @@ ALTER TABLE citas ADD COLUMN estado_pago VARCHAR(50) DEFAULT 'Pendiente';
 --
 -- Campo nuevo para la tabla `cliente`
 --
-ALTER TABLE cliente ADD stado enum('Activo','Inactivo') DEFAULT 'Activo';
+ALTER TABLE clientes ADD stado enum('Activo','Inactivo') DEFAULT 'Activo';
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
