@@ -39,9 +39,8 @@ include 'layout/header.php';
               </select>
             </div>
             <div class="mb-3">
-              <label class="form-label" for="precio" id="labelPrecio">Precio ofertado ($)</label>
+              <label class="form-label">Precio ofertado ($)</label>
               <input type="number" step="0.01" min="0" class="form-control" id="precio" name="precio" required>
-              <div class="form-text" id="precioHelp">Para promociones ingresa el porcentaje de descuento.</div>
             </div>
             <div class="mb-3">
               <label class="form-label">Descripción</label>

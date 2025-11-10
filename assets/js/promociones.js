@@ -5,56 +5,6 @@ document.addEventListener('DOMContentLoaded', () => {
   const tablaBody = document.querySelector('#tablaPromociones tbody');
   const mensaje = document.getElementById('mensajePromocion');
   const btnGuardar = document.getElementById('btnGuardarPromocion');
-  const tipoSelect = document.getElementById('tipo');
-  const precioInput = document.getElementById('precio');
-  const labelPrecio = document.getElementById('labelPrecio');
-  const precioHelp = document.getElementById('precioHelp');
-  const idField = document.getElementById('id_promocion');
-  const nombreInput = document.getElementById('nombre');
-  const descripcionInput = document.getElementById('descripcion');
-
-  let promocionesCache = [];
-
-  /**
-   * Ajustar dinámicamente la etiqueta y las restricciones del campo de precio/porcentaje.
-   */
-  function actualizarLeyendaPrecio() {
-    const tipo = tipoSelect.value;
-    if (tipo === 'Promoción') {
-      labelPrecio.textContent = 'Descuento (%)';
-      precioInput.setAttribute('step', '0.01');
-      precioInput.setAttribute('min', '0');
-      precioInput.setAttribute('max', '100');
-      precioHelp.textContent = 'Ingresa el porcentaje de descuento de la promoción.';
-    } else if (tipo === 'Combo') {
-      labelPrecio.textContent = 'Precio ofertado ($)';
-      precioInput.setAttribute('step', '0.01');
-      precioInput.setAttribute('min', '0');
-      precioInput.removeAttribute('max');
-      precioHelp.textContent = 'Ingresa el precio final del combo.';
-    } else {
-      labelPrecio.textContent = 'Precio ofertado ($)';
-      precioInput.setAttribute('step', '0.01');
-      precioInput.setAttribute('min', '0');
-      precioInput.removeAttribute('max');
-      precioHelp.textContent = 'Selecciona un tipo para definir el valor requerido.';
-    }
-  }
-
-  /**
-   * Restablecer el formulario a su estado inicial.
-   */
-  function limpiarFormulario() {
-    form.reset();
-    idField.value = '';
-    tipoSelect.removeAttribute('disabled');
-    tipoSelect.removeAttribute('data-locked');
-    actualizarLeyendaPrecio();
-    mensaje.classList.add('d-none');
-  }
-
-  tipoSelect.addEventListener('change', actualizarLeyendaPrecio);
-  actualizarLeyendaPrecio();
 
   /**
    * Consultar las promociones desde el servidor y pintar la tabla.
@@ -69,18 +19,13 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         // Limpiar filas existentes antes de repintar
         tablaBody.innerHTML = '';
-        promocionesCache = Array.isArray(res.data) ? res.data : [];
-        promocionesCache.forEach((promo, index) => {
-          const valor = Number.parseFloat(promo.precio ?? 0);
-          const valorTexto = promo.tipo === 'Promoción'
-            ? `${Number.isFinite(valor) ? valor.toFixed(2) : '0.00'}%`
-            : `$${Number.isFinite(valor) ? valor.toFixed(2) : '0.00'}`;
+        res.data.forEach((promo, index) => {
           const tr = document.createElement('tr');
           tr.innerHTML = `
             <td>${index + 1}</td>
             <td>${promo.nombre}</td>
             <td>${promo.tipo}</td>
-            <td>${valorTexto}</td>
+            <td>$${parseFloat(promo.precio).toFixed(2)}</td>
             <td><span class="badge ${promo.estado === 'Activo' ? 'bg-success' : 'bg-secondary'}">${promo.estado}</span></td>
             <td>
               <div class="btn-group" role="group">
@@ -119,7 +64,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Preparar datos para envío al servidor
     const data = new FormData(form);
-    const id = idField.value;
+    const id = document.getElementById('id_promocion').value;
     data.append('action', id ? 'update' : 'create');
 
     fetch('/salon_belleza/controllers/PromocionController.php', { method: 'POST', body: data })
@@ -127,7 +72,8 @@ document.addEventListener('DOMContentLoaded', () => {
       .then(res => {
         if (res.success) {
           mostrarMensaje(id ? 'Promoción actualizada correctamente.' : 'Promoción creada correctamente.', 'success');
-          limpiarFormulario();
+          form.reset();
+          document.getElementById('id_promocion').value = '';
           cargarPromociones();
         } else {
           mostrarMensaje(res.message || 'Ocurrió un error al guardar.', 'danger');
@@ -142,19 +88,19 @@ document.addEventListener('DOMContentLoaded', () => {
    */
   function onEdit(event) {
     const id = event.currentTarget.getAttribute('data-id');
-    const promo = promocionesCache.find(p => String(p.id_promocion) === String(id));
-    if (!promo) return;
-
-    idField.value = promo.id_promocion;
-    nombreInput.value = promo.nombre || '';
-    tipoSelect.value = promo.tipo;
-    actualizarLeyendaPrecio();
-    const valor = Number.parseFloat(promo.precio ?? 0);
-    precioInput.value = Number.isFinite(valor) ? valor.toFixed(2) : '';
-    descripcionInput.value = promo.descripcion || '';
-    tipoSelect.setAttribute('disabled', 'disabled');
-    tipoSelect.setAttribute('data-locked', 'true');
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    fetch('/salon_belleza/controllers/PromocionController.php?action=read&all=1')
+      .then(r => r.json())
+      .then(res => {
+        if (!res.success) return;
+        const promo = res.data.find(p => String(p.id_promocion) === String(id));
+        if (!promo) return;
+        document.getElementById('id_promocion').value = promo.id_promocion;
+        document.getElementById('nombre').value = promo.nombre;
+        document.getElementById('tipo').value = promo.tipo;
+        document.getElementById('precio').value = parseFloat(promo.precio).toFixed(2);
+        document.getElementById('descripcion').value = promo.descripcion || '';
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      });
   }
 
   /**
