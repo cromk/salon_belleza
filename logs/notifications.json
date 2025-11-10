@@ -12,7 +12,9 @@
             "id_cita": 1,
             "id_estilista": 5
         },
-        "read_by": [],
+        "read_by": [
+            1
+        ],
         "created_at": "2025-11-08 02:40:10"
     },
     {
@@ -32,7 +34,9 @@
             "hora_inicio": "13:00",
             "hora_fin": "13:45"
         },
-        "read_by": [],
+        "read_by": [
+            1
+        ],
         "created_at": "2025-11-08 02:41:49"
     },
     {
@@ -47,7 +51,60 @@
         "meta": {
             "id_cita": 15
         },
-        "read_by": [],
+        "read_by": [
+            1
+        ],
         "created_at": "2025-11-08 02:45:59"
+    },
+    {
+        "id": "n_69115c4c94892",
+        "title": "Cita reasignada",
+        "message": "La cita #2 ha sido reasignada al estilista 3",
+        "roles": [
+            1,
+            2
+        ],
+        "user_ids": [],
+        "meta": {
+            "id_cita": 2,
+            "id_estilista": 3
+        },
+        "read_by": [],
+        "created_at": "2025-11-10 04:30:20"
+    },
+    {
+        "id": "n_69115c7ac205e",
+        "title": "Cita reagendada",
+        "message": "La cita #2 fue reagendada a 2025-11-10 14:30-15:30",
+        "roles": [
+            1,
+            2
+        ],
+        "user_ids": [
+            3
+        ],
+        "meta": {
+            "id_cita": 2,
+            "fecha": "2025-11-10",
+            "hora_inicio": "14:30",
+            "hora_fin": "15:30"
+        },
+        "read_by": [],
+        "created_at": "2025-11-10 04:31:06"
+    },
+    {
+        "id": "n_69115c9ea85f4",
+        "title": "Cita cancelada",
+        "message": "La cita #2 fue cancelada. Motivo: Asuntos personales del cliente",
+        "roles": [
+            1,
+            2
+        ],
+        "user_ids": [],
+        "meta": {
+            "id_cita": 2
+        },
+        "read_by": [],
+        "created_at": "2025-11-10 04:31:42"
     }
 ]
